@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Route, Routes, Outlet } from "react-router-dom";
 import HomePage from "./pages/HomePage";
+import LandingPage from "./pages/umkm/LandingPage";
 import DashboardPage from "./pages/admin/DashboardPage";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/auth/LoginPage";
@@ -35,6 +36,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" Component={HomePage} />
+      <Route path="/landing" Component={LandingPage} />
 
       <Route path="/auth">
         <Route path="login" Component={LoginPage} />

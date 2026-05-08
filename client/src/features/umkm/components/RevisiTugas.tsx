@@ -8,10 +8,11 @@ import { useState } from "react";
 import { GoX } from "react-icons/go";
 import { ModalNotification } from "@/shared/components/ui/modal-notification";
 import { useNavigate } from "react-router-dom";
+import type { Project } from "@/features/umkm/types/dashboard.types";
 
 type RevisiTugasProps = {
+  project: Project;
   onBack: () => void;
-  onClose: () => void;
 };
 
 type PopupState =
@@ -23,7 +24,7 @@ type ModalState =
   | { visible: false }
   | { visible: true; type: "setuju" | "revisi" };
 
-export default function RevisiTugas({ onBack, onClose }: RevisiTugasProps) {
+export default function RevisiTugas({ project, onBack }: RevisiTugasProps) {
   const [popup, setPopup] = useState<PopupState>({ type: "none" });
   const [catatanRevisi, setCatatanRevisi] = useState("");
   const [modal, setModal] = useState<ModalState>({ visible: false });
@@ -37,11 +38,6 @@ export default function RevisiTugas({ onBack, onClose }: RevisiTugasProps) {
     setPopup({ type: "none" });
     setCatatanRevisi("");
     setModal({ visible: true, type: "revisi" });
-  };
-
-  const handleModalClose = () => {
-    setModal({ visible: false });
-    onClose();
   };
 
   const navigate = useNavigate();
@@ -77,32 +73,42 @@ export default function RevisiTugas({ onBack, onClose }: RevisiTugasProps) {
                     size={"sm"}
                     className="bg-warning-200/50 border-none px-5"
                   >
-                    Review
+                    {project.status_project}
                   </Badge>
                 </div>
                 <p className="text-xs text-justify">
-                  Lakukan redesign tampilan halaman agar terlihat lebih rapi dan
-                  user-friendly. Perbaiki struktur layout, warna, dan elemen UI
-                  supaya lebih konsisten dan mudah dipahami oleh pengguna.
+                  {project.deskripsi_project}
                 </p>
               </div>
 
               <table className="gap-5">
                 <tr className="flex justify-between mb-2">
-                  <th className="text-neutral-600 text-xs">Dikerjakan Oleh</th>
+                  <th className="text-neutral-600 text-xs">
+                    Penanggung Jawab Tim
+                  </th>
                   <th className="text-neutral-600 text-xs">Dikumpulkan</th>
                 </tr>
                 <tr className="flex justify-between mb-5">
-                  <td className="text-xs font-bold">Dani Hermanto</td>
+                  <td className="text-xs font-bold">
+                    {project.penanggung_jawab_project}
+                  </td>
                   <td className="text-xs">7 Maret 2026 20:21 WIB</td>
                 </tr>
                 <tr className="flex justify-between mb-2">
                   <th className="text-neutral-600 text-xs">Tahap</th>
-                  <th className="text-neutral-600 text-xs">Tenggat Waktu</th>
+                  <th className="text-neutral-600 text-xs">Tenggat Pengumpulan</th>
                 </tr>
                 <tr className="flex justify-between">
                   <td className="text-xs">Revisi ke-2</td>
-                  <td className="text-xs text-error">9 Maret 2026 23:59 WIB</td>
+                  <td className="text-xs text-error">
+                    {new Date(
+                      project.tanggal_selesai_project,
+                    ).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </td>
                 </tr>
               </table>
             </div>

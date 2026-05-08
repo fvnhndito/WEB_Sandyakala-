@@ -21,6 +21,12 @@ export function ModalShift({
 }: ModalShiftProps) {
   if (!open) return null;
 
+  const statusClasses: Record<string, string> = {
+    Disetujui: "bg-green-100 text-green-700",
+    Proses: "bg-gray-200 text-gray-700",
+    Review: "bg-yellow-100 text-yellow-700",
+  };
+
   return (
     <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
       <div className="bg-white w-full max-w-md rounded-xl shadow-lg overflow-hidden">
@@ -41,7 +47,11 @@ export function ModalShift({
           </div>
 
           {status && (
-            <span className="px-3 py-1 text-xs rounded-full bg-neutral-200">
+            <span
+              className={`px-3 py-1 text-xs rounded-full font-medium ${
+                statusClasses[status] || "bg-neutral-200 text-neutral-700"
+              }`}
+            >
               {status}
             </span>
           )}

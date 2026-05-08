@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Route, Routes, Outlet } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/admin/DashboardPage";
@@ -17,12 +16,13 @@ import DashboardUmkmPage from "./pages/umkm/DashboardUmkmPage";
 import LowonganUmkmPage from "./pages/umkm/LowonganUmkmPage";
 import ProfileUmkmPage from "./pages/umkm/ProfileUmkmPage";
 
-import DataShift from "./pages/umkm/DataShift";
-import DataProject from "./pages/umkm/DataProject";
-import DataPekerja from "./pages/umkm/DataPekerja";
+import DataShift from "./features/umkm/components/DataShift";
+import DataProject from "./features/umkm/components/DataProject";
+import DataPekerja from "./features/umkm/components/DataPekerja";
 
 import AddShiftPage from "./pages/umkm/AddShiftPage";
 import AddProjectPage from "./pages/umkm/AddProjectPage";
+import TaskLayoutContent from "./pages/umkm/TaskLayoutContent";
 
 import VerificationFgPage from "./pages/admin/VerificationFg";
 import DetailVerificationFgPage from "./pages/admin/DetailVerificationFgPage";
@@ -31,10 +31,8 @@ import DataLamaranMasuk from "./pages/umkm/DataLamaranMasuk";
 import DataDalamSeleksi from "./pages/umkm/DataDalamSeleksi";
 import DataPosisiTerbuka from "./pages/umkm/DataPosisiTerbuka";
 
-function App() {
-  const [shifts, setShifts] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
 
+function App() {
   return (
     <Routes>
       <Route path="/" Component={HomePage} />
@@ -48,15 +46,9 @@ function App() {
       <Route path="/admin">
         <Route path="dashboard" Component={DashboardPage} />
         <Route path="verifikasi-umkm" Component={VerificationPage} />
-        <Route
-          path="verifikasi-umkm/:namaUsaha"
-          Component={DetailVerificationPage}
-        />
+        <Route path="verifikasi-umkm/:namaUsaha" Component={DetailVerificationPage} />
         <Route path="verifikasi-freshgraduate" Component={VerificationFgPage} />
-        <Route
-          path="verifikasi-freshgraduate/:email"
-          Component={DetailVerificationFgPage}
-        />
+        <Route path="verifikasi-freshgraduate/:email" Component={DetailVerificationFgPage} />
         <Route path="laporan" Component={ReportPage} />
         <Route path="laporan/:namaUsaha" Component={DetailReportPage} />
       </Route>
@@ -68,20 +60,7 @@ function App() {
         <Route path="lowongan" Component={LowonganUmkmPage} />
         <Route path="profile" Component={ProfileUmkmPage} />
 
-        {/* Dashboard */}
-        <Route
-          path="dashboard"
-          element={
-            <Outlet
-              context={{
-                shifts,
-                setShifts,
-                projects,
-                setProjects,
-              }}
-            />
-          }
-        >
+        <Route path="dashboard" Component={TaskLayoutContent}>
           <Route index element={<DashboardUmkmPage />} />
           <Route path="data-shift" element={<DataShift />} />
           <Route path="data-project" element={<DataProject />} />
@@ -89,16 +68,8 @@ function App() {
           <Route path="lamaran-masuk" element={<DataLamaranMasuk />} />
           <Route path="dalam-seleksi" element={<DataDalamSeleksi />} />
           <Route path="posisi-terbuka" element={<DataPosisiTerbuka />} />
-          <Route
-            path="addshift"
-            element={<AddShiftPage shifts={shifts} setShifts={setShifts} />}
-          />
-          <Route
-            path="addproject"
-            element={
-              <AddProjectPage projects={projects} setProjects={setProjects} />
-            }
-          />
+          <Route path="addshift" element={<AddShiftPage />} />
+          <Route path="addproject" element={<AddProjectPage />} />
         </Route>
       </Route>
 

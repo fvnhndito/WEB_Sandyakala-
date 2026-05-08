@@ -36,7 +36,7 @@ export default function LowonganUmkm() {
                 variant="outline"
                 className="text-xs gap-1 border border-mint text-mint py-3 hover:bg-mint-100"
               >
-                <FaPlus className="text-sm " /> Status Lowongan
+                <FaPlus className="text-sm " /> Tambah Lowongan
               </Button>
             </div>
 

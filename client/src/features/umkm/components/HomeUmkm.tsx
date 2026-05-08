@@ -6,6 +6,21 @@ import { Button } from "@/shared/components/ui/button";
 import { FiPlus } from "react-icons/fi";
 import DashboardUmkmLayout from "@/shared/layouts/DashboardUmkmLayout";
 import { dataCardBisnis } from "../constants/mock-data";
+import { DetailPekerjaContent } from "./DetailPekerjaContent";
+import { useState } from "react";
+import { ModalPekerja } from "@/shared/components/ui/modal-pekerja";
+import type { Employee } from "@/features/umkm/types/dashboard.types";
+
+const employees: Employee[] = Array.from({ length: 5 }, (_, i) => ({
+  id: String(i + 1),
+  nama_pekerja: "Budi Santoso",
+  posisi_pekerja: "UI/UX Designer",
+  jenis_penugasan_pekerja: "Berbasis Proyek",
+  no_hp_pekerja: "081234567890",
+  tanggal_masuk_pekerja: "2024-01-10",
+  status_pekerja: "Aktif",
+  foto_pekerja: `https://i.pravatar.cc/150?img=${i + 1}`,
+}));
 
 interface CardBisnisProps {
   title: string;
@@ -49,6 +64,24 @@ const Header = ({
 };
 
 export default function HomeUmkm() {
+  const [open, setOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+    null,
+  );
+
+  const [employeeList, setEmployeeList] = useState<Employee[]>(employees);
+
+  const handleUpdateStatus = (id: string, status: "Aktif" | "Nonaktif") => {
+    setEmployeeList((prev) =>
+      prev.map((emp) =>
+        emp.id === id ? { ...emp, status_pekerja: status } : emp,
+      ),
+    );
+    setSelectedEmployee((prev) =>
+      prev?.id === id ? { ...prev, status_pekerja: status } : prev,
+    );
+  };
+
   return (
     <DashboardUmkmLayout>
       <section
@@ -97,7 +130,7 @@ export default function HomeUmkm() {
         <div className="flex items-center justify-between">
           <Header title="Tim Pekerja" description="Pekerja Aktif" />
           <Link
-            to="/umkm/pekerja"
+            to="/umkm/dashboard/data-pekerja"
             className="border-mint hover:bg-mint-200 hover:text-mint-300 transition-all duration-100 border rounded-md px-4 py-2 text-mint text-sm font-semibold"
           >
             Lihat Selengkapnya
@@ -106,40 +139,54 @@ export default function HomeUmkm() {
 
         <div className="grid my-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
           {/* Kasih kondisi, looping jika data tersedia */}
-          {Array.from({ length: 5 }).map((_, index) => (
+          {employeeList.map((Employee) => (
             <div
-              key={index}
+              key={Employee.id}
               className="p-4 shadow-md flex flex-col rounded-xl bg-white"
             >
               <div className="flex gap-3 items-center">
                 <div className="h-12 w-12 rounded-full overflow-hidden">
                   <img
-                    src="https://i.pravatar.cc/150?img=11"
-                    alt="Profile"
+                    src={
+                      Employee.foto_pekerja ?? "https://i.pravatar.cc/150?img=1"
+                    }
+                    alt="Profile Pekerja"
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="space-y-0.3">
-                  <h4 className="font-bold text-lg">Rizky Handoko</h4>
-                  <p className="text-gray-400">UI/UX Designer</p>
+                  <h4 className="font-bold text-lg">{Employee.nama_pekerja}</h4>
+                  <p className="text-gray-400">{Employee.posisi_pekerja}</p>
                 </div>
               </div>
               <Button
                 className="bg-mint-100 text-info-300 hover:text-white w-max font-medium mt-5 px-6 py-1"
                 size={"sm"}
               >
-                Berbasis Proyek
+                {Employee.jenis_penugasan_pekerja}
               </Button>
 
               <div className="flex justify-between items-center mb-5 mt-9">
-                <p className="text-xs text-gray-400">Bergabung 1 Maret 2026</p>
-
-                <Link
-                  to={"/umkm/pekerja"}
-                  className="p-2 border border-mint text-mint font-semibold text-xs rounded-md hover:bg-mint-200 transition-all duration-100 hover:text-mint-300"
+                <p className="text-xs text-gray-400">
+                  Bergabung{" "}
+                  {new Date(Employee.tanggal_masuk_pekerja).toLocaleDateString(
+                    "id-ID",
+                    {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    },
+                  )}
+                </p>
+                <button
+                  onClick={() => {
+                    setSelectedEmployee(Employee);
+                    setOpen(true);
+                  }}
+                  className="p-2 border border-mint text-mint font-semibold text-xs rounded-md hover:bg-mint-200 transition-all cursor-pointer duration-100 hover:text-mint-300"
                 >
                   Profil Pekerja
-                </Link>
+                </button>
               </div>
             </div>
           ))}
@@ -158,6 +205,22 @@ export default function HomeUmkm() {
             </div>
           </Link>
         </div>
+
+        {/* modal detail pekerja */}
+        <ModalPekerja
+          open={open}
+          onClose={() => setOpen(false)}
+          title="Detail Pekerja"
+          status={selectedEmployee?.status_pekerja}
+        >
+          {selectedEmployee && (
+            <DetailPekerjaContent
+              employee={selectedEmployee}
+              onClose={() => setOpen(false)}
+              onUpdateStatusPekerja={handleUpdateStatus}
+            />
+          )}
+        </ModalPekerja>
       </section>
     </DashboardUmkmLayout>
   );

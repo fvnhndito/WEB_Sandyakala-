@@ -13,6 +13,17 @@ const employees: Employee[] = [
     no_hp_pekerja: "081234567890",
     tanggal_masuk_pekerja: "2024-01-10",
     status_pekerja: "Aktif",
+    foto_pekerja: "https://i.pravatar.cc/150",
+  },
+  {
+    id: "1",
+    nama_pekerja: "Budi Santoso",
+    posisi_pekerja: "UI/UX Designer",
+    jenis_penugasan_pekerja: "Berbasis Proyek",
+    no_hp_pekerja: "081234567890",
+    tanggal_masuk_pekerja: "2024-01-10",
+    status_pekerja: "Nonaktif",
+    foto_pekerja: "https://i.pravatar.cc/150",
   },
 ];
 
@@ -73,12 +84,32 @@ export default function DataPekerja() {
     </div>
   );
 
+  const [employeeList, setEmployeeList] = useState<Employee[]>(employees);
+
+  const handleUpdateStatus = (id: string, status: "Aktif" | "Nonaktif") => {
+    setEmployeeList((prev) =>
+      prev.map((emp) =>
+        emp.id === id ? { ...emp, status_pekerja: status } : emp,
+      ),
+    );
+    setSelectedEmployee((prev) =>
+      prev?.id === id ? { ...prev, status_pekerja: status } : prev,
+    );
+  };
+
+  const [filterStatus, setFilterStatus] = useState<string>("");
+
+  const filteredEmployees = filterStatus
+    ? employeeList.filter((e) => e.status_pekerja.toLowerCase() === filterStatus)
+    : employeeList;
+
   return (
     <DataTaskLayout
       title="Data Pekerja"
       description="Kelola semua pekerja dalam satu tampilan"
       statusOptions={["Aktif", "Nonaktif"]}
       statCardSlot={statCardSlot}
+      onStatusChange={(status) => setFilterStatus(status)}
     >
       <div className="w-full px-6">
         <div className="border border-neutral-200 rounded-lg overflow-hidden">
@@ -107,8 +138,8 @@ export default function DataPekerja() {
             </thead>
 
             <tbody>
-              {employees.length > 0 ? (
-                employees.map((Employee, index) => (
+              {filteredEmployees.length > 0 ? (
+                filteredEmployees.map((Employee, index) => (
                   <tr
                     key={Employee.id ?? index}
                     className="hover:bg-neutral-100 transition text-center text-xs"
@@ -132,7 +163,13 @@ export default function DataPekerja() {
                     </td>
 
                     <td className="border px-3 py-2 whitespace-nowrap">
-                      {Employee.tanggal_masuk_pekerja}
+                      {new Date(
+                        Employee.tanggal_masuk_pekerja,
+                      ).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
                     </td>
 
                     <td className="border px-3 py-2">
@@ -187,6 +224,7 @@ export default function DataPekerja() {
             <DetailPekerjaContent
               employee={selectedEmployee}
               onClose={() => setOpen(false)}
+              onUpdateStatusPekerja={handleUpdateStatus}
             />
           )}
         </ModalPekerja>

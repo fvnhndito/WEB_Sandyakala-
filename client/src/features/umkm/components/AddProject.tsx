@@ -5,15 +5,32 @@ import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { GoX, GoPlus } from "react-icons/go";
 import SectionTask from "@/features/umkm/components/ui/section-task";
-import type {Project}  from "@/features/umkm/types/dashboard.types"
-
+import type { Project } from "@/features/umkm/types/dashboard.types";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 
 type AddProjectProps = {
   projects: any[];
   setProjects: React.Dispatch<React.SetStateAction<any[]>>;
 };
 
+interface IFormInput {
+  namaProject: string;
+  divisiProject: string;
+  deskripsiProject: string;
+  tanggalMulaiProject: string;
+  tanggalSelesaiProject: string;
+  anggotaTimProject: string;
+  penanggungJawabProject: string;
+}
+
 export default function AddProject({ projects, setProjects }: AddProjectProps) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<IFormInput>();
+
   const navigate = useNavigate();
 
   const [project, setProject] = useState({
@@ -28,13 +45,6 @@ export default function AddProject({ projects, setProjects }: AddProjectProps) {
     penanggung_jawab_project: "",
     status_project: "",
   });
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setProject((prev) => ({ ...prev, [name]: value }));
-  };
 
   const handleTaskChange = (index: number, value: string) => {
     const newTasks = [...project.list_tugas_project];
@@ -57,9 +67,7 @@ export default function AddProject({ projects, setProjects }: AddProjectProps) {
     }));
   };
 
-  const handleAdd = (event: React.FormEvent) => {
-    event.preventDefault();
-
+  const onSubmit: SubmitHandler<IFormInput> = (data) => {
     const filteredTasksProject = project.list_tugas_project.filter(
       (t) => t.trim() !== "",
     );
@@ -67,6 +75,13 @@ export default function AddProject({ projects, setProjects }: AddProjectProps) {
     const newProject: Project = {
       ...project,
       id: String(projects.length + 1),
+      nama_project: data.namaProject,
+      divisi_project: data.divisiProject,
+      deskripsi_project: data.deskripsiProject,
+      tanggal_mulai_project: data.tanggalMulaiProject,
+      tanggal_selesai_project: data.tanggalSelesaiProject,
+      anggota_tim_project: data.anggotaTimProject,
+      penanggung_jawab_project: data.penanggungJawabProject,
       list_tugas_project: filteredTasksProject,
       status_project: "Review" as "Selesai" | "Revisi" | "Review",
     };
@@ -76,39 +91,54 @@ export default function AddProject({ projects, setProjects }: AddProjectProps) {
   };
 
   return (
-    <TaskLayout type="project" onSubmit={handleAdd}>
+    <TaskLayout type="project" onSubmit={handleSubmit(onSubmit)}>
       <SectionTask title="Detail Project">
-        <label>
-          <span className="text-sm mb-2">Nama Project</span>
+        <label className="flex flex-col">
+          <span className="text-sm">Nama Project</span>
           <Input
-            name="nama_project"
-            value={project.nama_project}
-            onChange={handleChange}
             placeholder="Nama project"
             className="rounded-lg mt-2 mb-2"
+            {...register("namaProject", {
+              required: "Nama project wajib diisi",
+            })}
           />
+          {errors.namaProject && (
+            <span className="text-error text-xs">
+              {errors.namaProject.message}
+            </span>
+          )}
         </label>
 
-        <label>
-          <span className="text-sm mb-2">Divisi Project</span>
+        <label className="flex flex-col">
+          <span className="text-sm">Divisi Project</span>
           <Input
-            name="divisi_project"
-            value={project.divisi_project}
-            onChange={handleChange}
             placeholder="Design / Development / QA"
-            className="rounded-lg mt-2 mb-2"
+            className="rounded-lg mt-2 "
+            {...register("divisiProject", {
+              required: "Divisi project wajib diisi",
+            })}
           />
+          {errors.divisiProject && (
+            <span className="text-error text-xs mt-1">
+              {errors.divisiProject.message}
+            </span>
+          )}
         </label>
 
         <label className="flex flex-col">
           <span className="text-sm mb-2">Deskripsi Project</span>
           <textarea
-            name="deskripsi_project"
-            value={project.deskripsi_project}
-            onChange={handleChange}
             placeholder="Deskripsi project"
             className="w-full px-6 py-2.5 text-sm rounded-lg border border-gray-300 focus:ring focus:ring-primary"
+            {...register("deskripsiProject", {
+              required: "Deskripsi project wajib diisi",
+            })}
           />
+          {errors.deskripsiProject && (
+            <span className="text-error text-xs mt-1">
+              {errors.deskripsiProject.message}
+            </span>
+          )}
         </label>
 
         <div className="flex gap-3 mt-3">
@@ -116,22 +146,35 @@ export default function AddProject({ projects, setProjects }: AddProjectProps) {
             <span className="text-sm">Tanggal Mulai</span>
             <Input
               type="date"
-              name="tanggal_mulai_project"
-              value={project.tanggal_mulai_project}
-              onChange={handleChange}
               className="mt-2 rounded-lg"
+              {...register("tanggalMulaiProject", {
+                required: "Tanggal mulai wajib diisi",
+              })}
             />
+            {errors.tanggalMulaiProject && (
+              <span className="text-error text-xs mt-1">
+                {errors.tanggalMulaiProject.message}
+              </span>
+            )}
           </div>
 
           <div className="w-full">
             <span className="text-sm">Tanggal Selesai</span>
             <Input
               type="date"
-              name="tanggal_selesai_project"
-              value={project.tanggal_selesai_project}
-              onChange={handleChange}
               className="mt-2 rounded-lg"
+              {...register("tanggalSelesaiProject", {
+                required: "Tanggal selesai wajib diisi",
+                validate: (value, formValues) =>
+                  value >= formValues.tanggalSelesaiProject ||
+                  "Tanggal selesai tidak boleh sebelum tanggal mulai",
+              })}
             />
+            {errors.tanggalSelesaiProject && (
+              <span className="text-error text-xs mt-1">
+                {errors.tanggalSelesaiProject.message}
+              </span>
+            )}
           </div>
         </div>
       </SectionTask>
@@ -172,24 +215,39 @@ export default function AddProject({ projects, setProjects }: AddProjectProps) {
       </SectionTask>
 
       <SectionTask title="Tim">
-        <span className="text-sm">Tambahkan Anggota Tim</span>
+        <label className="flex flex-col">
+          <span className="text-sm">Tambahkan Anggota Tim</span>
         <Input
-          name="anggota_tim_project"
-          value={project.anggota_tim_project}
-          onChange={handleChange}
           placeholder="Anggota tim"
-          className="mb-2 rounded-lg"
+          className=" rounded-lg mt-2"
+          {...register("anggotaTimProject", {
+            required: "Anggota tim wajib diisi",
+          })}
         />
+        {errors.anggotaTimProject && (
+          <span className="text-error text-xs mt-1">
+            {errors.anggotaTimProject.message}
+          </span>
+        )}
+        </label>
+        
 
-        <span className="text-sm">Penanggung Jawab Tim</span>
+        <label className="flex flex-col">
+          <span className="text-sm">Penanggung Jawab Tim</span>
 
-        <Input
-          name="penanggung_jawab_project"
-          value={project.penanggung_jawab_project}
-          onChange={handleChange}
-          placeholder="Penanggung jawab"
-          className="rounded-lg"
-        />
+          <Input
+            placeholder="Penanggung jawab"
+            className="rounded-lg mt-2"
+            {...register("penanggungJawabProject", {
+              required: "Penanggung jawab wajib diisi",
+            })}
+          />
+          {errors.penanggungJawabProject && (
+            <span className="text-error text-xs mt-1">
+              {errors.penanggungJawabProject.message}
+            </span>
+          )}
+        </label>
       </SectionTask>
     </TaskLayout>
   );

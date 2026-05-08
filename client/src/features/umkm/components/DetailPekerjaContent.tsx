@@ -1,40 +1,38 @@
 import { useState } from "react";
 import type { Employee } from "../types/dashboard.types";
-import { FcBusinessman } from "react-icons/fc";
 import { ModalNotification } from "@/shared/components/ui/modal-notification";
 
 type Props = {
   employee: Employee;
   onClose: () => void;
+  onUpdateStatusPekerja: (id: string, status: "Aktif" | "Nonaktif") => void;
 };
 
-export function DetailPekerjaContent({ employee, onClose }: Props) {
+export function DetailPekerjaContent({ employee, onClose, onUpdateStatusPekerja}: Props) {
+
+  const handleKonfirmasi = () => {
+    const newStatus = modalConfig.type === "aktifkan" ? "Aktif" : "Nonaktif";
+    onUpdateStatusPekerja(employee.id, newStatus); 
+    setModalConfig({ visible: false, type: "aktifkan" });
+    onClose();
+  };
+
   const [modalConfig, setModalConfig] = useState<{
     visible: boolean;
     type: "aktifkan" | "nonaktifkan";
   }>({ visible: false, type: "aktifkan" });
 
-  const handleKonfirmasi = () => {
-    if (modalConfig.type === "aktifkan") {
-      console.log("Pekerja diaktifkan");
-    } else {
-      console.log("Pekerja dinon-aktifkan");
-    }
-    setModalConfig({ visible: false, type: "aktifkan" });
-    onClose();
-  };
-
   return (
     <div className="flex flex-col gap-6 ">
       {/* data profile */}
-      <div className="flex flex-row gap-5 px-5 py-3">
+      <div className="flex flex-row gap-5 px-5 py-3 items-center">
         {/* poto profile */}
-        <div className="bg-primary-subtle/50 rounded-full p-3">
-          <FcBusinessman className="text-4xl" />
+        <div className="bg-primary-subtle/50 rounded-full p-2">
+          <img src={employee.foto_pekerja} alt="Profile Pekerja" className="rounded-full h-15 w-15"/>
         </div>
         {/* data pekerja */}
         <div className="flex flex-col gap-1">
-          <p className="font-bold text-xl">Kathryn Murphy</p>
+          <p className="font-bold text-xl">{employee.nama_pekerja}</p>
           <p className="font-light text-sm">
             Posisi: {employee.posisi_pekerja}
           </p>
@@ -58,7 +56,16 @@ export function DetailPekerjaContent({ employee, onClose }: Props) {
         </div>
         <div className="flex justify-between">
           <p className="text-neutral-500/50 text-xs">Mulai Bergabung</p>
-          <p className="text-xs">{employee.tanggal_masuk_pekerja}</p>
+          <p className="text-xs">
+            {new Date(employee.tanggal_masuk_pekerja).toLocaleDateString(
+              "id-ID",
+              {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              },
+            )}
+          </p>
         </div>
       </div>
       {/* button */}

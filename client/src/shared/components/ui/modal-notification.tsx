@@ -55,13 +55,13 @@ export function ModalNotification({
           {button.type === "double" ? (
             <div className="flex gap-3 justify-center">
               <button
-                className="flex-1 py-2.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium bg-white active:opacity-70"
+                className="flex-1 py-2.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium bg-white active:opacity-70 cursor-pointer"
                 onClick={button.onCancel}
               >
                 {button.cancelLabel}
               </button>
               <button
-                className="flex-1 py-2.5 rounded-lg bg-primary-dark text-white text-sm font-medium active:opacity-70"
+                className="flex-1 py-2.5 rounded-lg bg-primary-dark text-white text-sm font-medium active:opacity-70 cursor-pointer"
                 onClick={button.onConfirm}
               >
                 {button.confirmLabel}
@@ -70,7 +70,7 @@ export function ModalNotification({
           ) : (
             <div className="flex justify-center">
               <button
-                className="px-10 py-2.5 rounded-lg bg-primary-dark text-white text-sm font-medium active:opacity-70"
+                className="px-10 py-2.5 rounded-lg bg-primary-dark text-white text-sm font-medium cursor-pointer active:opacity-70"
                 onClick={button.onPress}
               >
                 {button.label}

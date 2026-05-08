@@ -1,13 +1,9 @@
 import DashboardUmkmLayout from "@/shared/layouts/DashboardUmkmLayout";
-import AddShift from "../../features/umkm/components/AddShift";
+import AddShift from "@/features/umkm/components/AddShift"; 
+import { useTask } from "./TaskContext";
 
-type AddShiftProps = {
-  shifts: any[];
-  setShifts: React.Dispatch<React.SetStateAction<any[]>>;
-};
-
-
-export default function AddShiftPage({ shifts, setShifts }: AddShiftProps) {
+export default function AddShiftPage() { 
+const { shifts, setShifts } = useTask();
   return (
     <DashboardUmkmLayout>
       <AddShift type="pagi" shifts={shifts} setShifts={setShifts} />

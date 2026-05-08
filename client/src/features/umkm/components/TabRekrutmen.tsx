@@ -70,7 +70,7 @@ export default function TabRekrutmen() {
             <CardHeader
               title="Lamaran Terbaru"
               linkTitle="Seleksi Pelamar"
-              to={"/umkm/dashboard"}
+              to={"/umkm/dashboard/lamaran-masuk"}
             />
 
             <div className="flex flex-col">
@@ -124,7 +124,7 @@ export default function TabRekrutmen() {
             <CardHeader
               title="Jadwal Wawancara"
               linkTitle="Lihat Wawancara"
-              to={"/umkm/dashboard"}
+              to={"/umkm/dashboard/dalam-seleksi"}
             />
 
             <div className="flex flex-col gap-3">
@@ -156,7 +156,7 @@ export default function TabRekrutmen() {
             <CardHeader
               title="Daftar Lowongan"
               linkTitle="Lihat Lowongan"
-              to={"/umkm/dashboard"}
+              to={"/umkm/dashboard/posisi-terbuka"}
             />
 
             <div className="flex flex-col">

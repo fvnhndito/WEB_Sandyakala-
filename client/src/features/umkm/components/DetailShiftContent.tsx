@@ -1,14 +1,19 @@
 import { ModalNotification } from "@/shared/components/ui/modal-notification";
 import { useState } from "react";
 
+// data dari shift
 type Shift = {
+  id: number;
+  divisi_shift: string;
   nama_pekerja_shift: string;
+  nama_shift: string;
   list_tugas_shift: string[];
   waktu_mulai_shift: string;
   waktu_selesai_shift: string;
+  jenis_shift: string;
   tanggal_shift: string;
-  jamMasuk: string;
-  jamPulang: string;
+  jam_masuk: string;
+  jam_pulang: string;
   status_shift: "Disetujui" | "Proses" | "Review";
 };
 
@@ -18,10 +23,12 @@ type Props = {
 };
 
 export function DetailShiftContent({ shift, onClose }: Props) {
+  // untuk atur button saat status shift berubah
   const isProses = shift.status_shift === "Proses";
   const isReview = shift.status_shift === "Review";
   const isDisetujui = shift.status_shift === "Disetujui";
 
+  // ini list dari tugas shift
   const checklist = shift.list_tugas_shift ?? [];
   const isDone = shift.status_shift === "Disetujui";
 
@@ -32,18 +39,23 @@ export function DetailShiftContent({ shift, onClose }: Props) {
     type: "setuju";
   }>({ visible: false, type: "setuju" });
 
-
   return (
     <div className="flex flex-col gap-5">
       {/* GRID DETAIL */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-neutral-100 rounded-lg p-3">
+          {/* tanggal shift */}
           <p className="text-xs text-neutral-500 mb-2">Tanggal Shift</p>
           <p className="font-semibold text-sm text-primary-dark">
-            {shift.tanggal_shift}
+            {new Date(shift.tanggal_shift).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
           </p>
         </div>
-
+        
+        {/* waktu shift */}
         <div className="bg-neutral-100 rounded-lg p-3">
           <p className="text-xs text-neutral-500 mb-2">Waktu Shift</p>
           <p className="font-semibold text-sm text-primary-dark">
@@ -54,14 +66,14 @@ export function DetailShiftContent({ shift, onClose }: Props) {
         <div className="bg-neutral-100 rounded-lg p-3">
           <p className="text-xs text-neutral-500 mb-2">Jam Masuk</p>
           <p className="font-semibold text-sm text-primary-dark">
-            {shift.jamMasuk}
+            {shift.jam_masuk}
           </p>
         </div>
 
         <div className="bg-neutral-100 rounded-lg p-3">
           <p className="text-xs text-neutral-500 mb-2">Jam Pulang</p>
           <p className="font-semibold text-sm text-primary-dark">
-            {shift.jamPulang || "--:--"}
+            {shift.jam_pulang || "--:--"}
           </p>
         </div>
       </div>
@@ -98,10 +110,10 @@ export function DetailShiftContent({ shift, onClose }: Props) {
               {isDone}
             </div>
 
-            {/* text */}
+            {/* teks */}
             <p
               className={`text-sm ${
-                isDone ? "line-through text-neutral-400" : ""
+                isDone ? "line-through text-neutral-700" : ""
               }`}
             >
               {item}
@@ -112,15 +124,17 @@ export function DetailShiftContent({ shift, onClose }: Props) {
 
       {/* BUTTON */}
       <div className="mt-4">
+        {/* kalo status review button nya setujui */}
         {isReview && (
           <button
             onClick={() => setModalConfig({ visible: true, type: "setuju" })}
-            className="w-full bg-primary-dark text-white py-2 rounded-md"
+            className="w-full bg-primary-dark text-white py-2 rounded-md cursor-pointer hover:bg-primary-dark/75"
           >
             Setujui
           </button>
         )}
 
+        {/* kalo status proses dan disetujui button nya kembali */}
         {(isProses || isDisetujui) && (
           <button
             onClick={onClose}

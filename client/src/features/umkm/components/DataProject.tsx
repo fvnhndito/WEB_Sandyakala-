@@ -1,23 +1,24 @@
-import { useOutletContext } from "react-router-dom";
 import DataTaskLayout from "@/shared/layouts/DataTaskLayout";
 import type { Project } from "@/features/umkm/types/dashboard.types";
 import RevisiTugas from "@/features/umkm/components/RevisiTugas";
 import { useState } from "react";
+import { useTask } from "@/pages/umkm/TaskContext";
 
-type OutletContextType = {
-  projects: Project[];
-  setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
-};
 
 export default function DataProject() {
-  const { projects } = useOutletContext<OutletContextType>();
+  const { projects } = useTask();
   const showDetailButtonProject = ["Review", "Revisi", "Selesai"];
   const [showRevisi, setShowRevisi] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  if (showRevisi) {
-    return <RevisiTugas onBack={() => setShowRevisi(false)} />;
+  if (showRevisi && selectedProject) {
+    return (
+      <RevisiTugas
+        project={selectedProject}
+        onBack={() => setShowRevisi(false)}
+      />
+    );
   }
-
   // Atur status project
   const getStatusBadgeProject = (status_project: Project["status_project"]) => {
     const classesProject: Record<string, string> = {
@@ -27,7 +28,6 @@ export default function DataProject() {
     };
     return classesProject[status_project.toLowerCase()] ?? "";
   };
-
 
   return (
     <DataTaskLayout
@@ -97,11 +97,23 @@ export default function DataProject() {
                     </td>
 
                     <td className="border px-3 py-2 capitalize">
-                      {project.tanggal_mulai_project}
+                      {new Date(
+                        project.tanggal_mulai_project,
+                      ).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
                     </td>
 
                     <td className="border px-3 py-2 whitespace-nowrap">
-                      {project.tanggal_selesai_project}
+                      {new Date(
+                        project.tanggal_selesai_project,
+                      ).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
                     </td>
 
                     <td className="border px-3 py-2">
@@ -119,7 +131,10 @@ export default function DataProject() {
                         project.status_project,
                       ) && (
                         <button
-                          onClick={() => setShowRevisi(true)}
+                          onClick={() => {
+                            setSelectedProject(project);
+                            setShowRevisi(true);
+                          }}
                           className="border border-primary-dark px-3 py-1 text-xs rounded-md hover:bg-primary-dark hover:text-white transition cursor-pointer"
                         >
                           Detail

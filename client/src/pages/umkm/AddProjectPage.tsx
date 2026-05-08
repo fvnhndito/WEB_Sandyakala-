@@ -1,13 +1,10 @@
-import AddProject from "../../features/umkm/components/AddProject";
+import AddProject from "@/features/umkm/components/AddProject";
 import DashboardUmkmLayout from "@/shared/layouts/DashboardUmkmLayout";
+import { useTask } from "@/pages/umkm/TaskContext";
 
+export default function AddProjectPage() {
+  const { projects, setProjects } = useTask(); 
 
-type AddProjectProps = {
-  projects: any[];
-  setProjects: React.Dispatch<React.SetStateAction<any[]>>;
-};
-
-export default function AddProjectPage({ projects, setProjects }: AddProjectProps) {
   return (
     <DashboardUmkmLayout>
       <AddProject projects={projects} setProjects={setProjects} />

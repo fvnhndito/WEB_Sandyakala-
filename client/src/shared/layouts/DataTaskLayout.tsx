@@ -2,6 +2,7 @@ import { SearchInput } from "@/shared/components/ui/search-input";
 import { GoArrowLeft } from "react-icons/go";
 import { useNavigate } from "react-router-dom";
 import type { StatCardDataType } from "@/features/umkm/types/dashboard.types";
+import { useState } from "react";
 
 interface DataTaskLayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ interface DataTaskLayoutProps {
   statusOptions?: string[];
   statCardData?: StatCardDataType[];
   statCardSlot?: React.ReactNode;
+  onStatusChange?: (status: string) => void;
 }
 
 export default function DataTaskLayout({
@@ -26,9 +28,11 @@ export default function DataTaskLayout({
   activeTab,
   statusOptions = [],
   statCardSlot,
-
+  onStatusChange,
 }: DataTaskLayoutProps) {
   const navigate = useNavigate();
+
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   return (
     <div className="bg-neutral-400 min-h-screen p-25 flex justify-center">
@@ -46,9 +50,7 @@ export default function DataTaskLayout({
         </div>
 
         {/* STAT CARD */}
-        {statCardSlot && (
-      <div className="px-6 mt-4">{statCardSlot}</div>
-    )}
+        {statCardSlot && <div className="px-6 mt-4">{statCardSlot}</div>}
 
         {/* TABS (optional) */}
         {tabs.length > 0 && (
@@ -77,12 +79,14 @@ export default function DataTaskLayout({
 
           {statusOptions.length > 0 && (
             <select
-              defaultValue="Pilih Status"
+              value={selectedStatus}
               className="border border-gray-300 rounded-md px-3 py-2 cursor-pointer hover:bg-mint-100/15"
+              onChange={(e) => {
+                setSelectedStatus(e.target.value);
+                onStatusChange?.(e.target.value);
+              }}
             >
-              <option disabled value="Pilih Status">
-                Pilih Status
-              </option>
+              <option value="">Semua Status</option>
 
               {statusOptions.map((status) => (
                 <option key={status} value={status.toLowerCase()}>

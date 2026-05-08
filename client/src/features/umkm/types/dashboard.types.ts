@@ -52,15 +52,20 @@ export interface TestimonialItem {
 
 // Add Shift Types
 export type Shift = {
-  id: string;
+  id: number;
   nama_shift: string;
+  divisi_shift: string;
   nama_pekerja_shift: string;
   waktu_mulai_shift: string;
   waktu_selesai_shift: string;
-  jenis_shift: "" | "pagi" | "siang" | "malam";
+  jenis_shift: "pagi" | "siang" | "malam";
+  tanggal_shift: string;
+  jam_masuk: string;
+  jam_pulang: string;
   list_tugas_shift: string[];
   status_shift: "Proses" | "Review" | "Disetujui";
 };
+
 
 // data pekerja
 export type Employee = {
@@ -71,6 +76,7 @@ export type Employee = {
   no_hp_pekerja: string;
   tanggal_masuk_pekerja: string;
   status_pekerja: "Aktif" | "Nonaktif";
+  foto_pekerja?: string;
 }
 
 // Add Project Types

@@ -19,7 +19,7 @@ export default function TabShift() {
           <FaPlus className=" text-xl" /> Tambah Shift
         </Link>
         <Link
-          to="/umkm/projects"
+          to="/umkm/dashboard/data-shift"
           className="px-4 text-mint py-2.5 border hover:bg-mint-200/50 border-mint cursor-pointer text-sm rounded-md"
         >
           Lihat Shift

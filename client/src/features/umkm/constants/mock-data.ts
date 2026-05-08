@@ -3,6 +3,8 @@ import type {
   BenefitItem,
   ContactItem,
   JobOpening,
+  Project,
+  Shift,
   StatCard,
   StatCardDataType,
   TabsData,
@@ -242,13 +244,13 @@ export const dataCardBisnis = [
     title: "Proyek & Task",
     description: "Pantau progres proyek tim secara langsung.",
     Icon: BiSolidNotepad,
-    link: "/umkm/proyek",
+    link: "/umkm/dashboard/data-project",
   },
   {
     title: "Shift Harian",
     description: "Atur jadwal & konfirmasi kehadiran",
     Icon: FaUserClock,
-    link: "/umkm/proyek",
+    link: "/umkm/dashboard/data-shift",
   },
 ];
 
@@ -472,5 +474,46 @@ export const taskList: TaskListType[] = [
     project: "Redesign Web Toko",
     deadline: "28-03-2026",
     status: "Draft",
+  },
+];
+
+export const mockShifts: Shift[] = [
+  {
+    id: 1,
+    divisi_shift: "UI/UX Designer",
+    nama_pekerja_shift: "Rizky Handoko",
+    nama_shift: "Morning Design Review",
+    list_tugas_shift: [
+      "Membuat wireframe",
+      "Revisi dashboard",
+      "Push Github",
+    ],
+    waktu_mulai_shift: "08:00",
+    waktu_selesai_shift: "12:00",
+    jenis_shift: "pagi",
+    tanggal_shift: "2026-05-07",
+    jam_masuk: "07:55",
+    jam_pulang: "12:05",
+    status_shift: "Review",
+  },
+];
+
+export const mockProjects: Project[] = [
+  {
+    id: "1",
+    nama_project: "Redesign Landing Page FreshStart",
+    divisi_project: "UI/UX Design",
+    deskripsi_project: "Melakukan redesign landing page FreshStart agar lebih modern dan responsif sesuai brand guideline terbaru perusahaan.",
+    tanggal_mulai_project: "2026-05-01",
+    tanggal_selesai_project: "2026-06-01",
+    list_tugas_project: [
+      "Riset kompetitor dan referensi desain",
+      "Membuat wireframe halaman utama",
+      "Desain UI di Figma",
+      "Handoff ke tim developer",
+    ],
+    anggota_tim_project: "Budi Santoso, Rina Dewi, Cahyo",
+    penanggung_jawab_project: "Rina Dewi",
+    status_project: "Review",
   },
 ];

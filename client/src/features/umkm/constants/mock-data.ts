@@ -3,6 +3,7 @@ import type {
   BenefitItem,
   ContactItem,
   JobOpening,
+  Pelamar,
   Project,
   Shift,
   StatCard,
@@ -10,6 +11,7 @@ import type {
   TabsData,
   TaskListType,
   TestimonialItem,
+  Wawancara,
 } from "../types/dashboard.types";
 import { FaUserClock, FaUserPlus } from "react-icons/fa6";
 import { BiSolidNotepad } from "react-icons/bi";
@@ -232,13 +234,13 @@ export const dataCardBisnis = [
     title: "Buat Lowongan",
     description: "Pasang posisi & mulai terima pelamar.",
     Icon: RiUserSearchFill,
-    link: "/umkm/lowongan",
+    link: "/umkm/add-lowongan",
   },
   {
     title: "Kelola Pelamar",
     description: "Seleksi & Wawancara kandidat terbaik.",
     Icon: FaUserPlus,
-    link: "/umkm/pelamar",
+    link: "/umkm/dashboard/lamaran-masuk",
   },
   {
     title: "Proyek & Task",
@@ -517,3 +519,62 @@ export const mockProjects: Project[] = [
     status_project: "Review",
   },
 ];
+
+export const dataDummy: Pelamar[] = [
+  {
+    id: 1,
+    nama_pelamar: "Kathryn Murphy",
+    posisi_pelamar: "UI/UX Designer",
+    pendidikan_terakhir_pelamar: "S1 Desain Komunikasi Visual",
+    kontak_pelamar: "081234567890",
+    tanggal_melamar: "19 Maret 2025",
+    status_pelamar: "Diterima",
+  },
+  {
+    id: 2,
+    nama_pelamar: "Devon Lane",
+    posisi_pelamar: "Web Designer",
+    pendidikan_terakhir_pelamar: "S1 Teknik Informatika",
+    kontak_pelamar: "081234857690",
+    tanggal_melamar: "22 Maret 2025",
+    status_pelamar: "Ditolak",
+  },
+];
+
+export const mockWawancara: (Pelamar & Wawancara)[] = [
+  {
+    // Data Pelamar
+    id: 1,
+    nama_pelamar: "Kathryn Murphy",
+    posisi_pelamar: "UI/UX Designer",
+    pendidikan_terakhir_pelamar: "S1 Desain Komunikasi Visual",
+    kontak_pelamar: "081234567890",
+    tanggal_melamar: "19 Maret 2025",
+    status_pelamar: "Diterima",
+    // Data Wawancara
+    tanggal_wawancara: "2025-03-25",
+    waktu_mulai_wawancara: "10:00",
+    waktu_selesai_wawancara: "11:00",
+    metode_wawancara: "Google Meet",
+    tautan_wawancara: "meet.google.com/abc-xyz",
+    note_wawancara: "Siapkan portofolio desain sebelum interview",
+    status_wawancara: "Wawancara",
+  },
+  {
+    id: 2,
+    nama_pelamar: "Devon Lane",
+    posisi_pelamar: "Web Designer",
+    pendidikan_terakhir_pelamar: "S1 Teknik Informatika",
+    kontak_pelamar: "081234857690",
+    tanggal_melamar: "22 Maret 2025",
+    status_pelamar: "Diterima",
+    tanggal_wawancara: "2025-03-26",
+    waktu_mulai_wawancara: "13:00",
+    waktu_selesai_wawancara: "14:00",
+    metode_wawancara: "Tatap Muka",
+    tautan_wawancara: "Jl. Kemang Raya No. 45, Jaksel",
+    note_wawancara: "Bawa CV dan portofolio fisik",
+    status_wawancara: "Wawancara",
+  },
+];
+

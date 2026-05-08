@@ -85,7 +85,7 @@ export default function ChatPage() {
 
   const activeContact = useMemo(
     () => contacts.find((c) => c.id === activeContactId) ?? contacts[0],
-    [activeContactId]
+    [activeContactId],
   );
 
   const messages = conversationByContact[activeContact.id] ?? [];
@@ -93,13 +93,12 @@ export default function ChatPage() {
   return (
     <main className="min-h-dvh w-full bg-[#e9e9e9]">
       <div className="flex min-h-dvh w-full flex-col overflow-hidden bg-white sm:flex-row">
-
         {/* SIDEBAR */}
         <aside className="w-full shrink-0 bg-[#4f6fa3] text-white sm:w-75 sm:border-r sm:border-black/5">
           <header className="border-b border-white/20 px-4 py-4 sm:px-6 sm:py-5">
             <div className="mb-4 flex items-center gap-3 text-xl font-bold">
               <FiArrowLeft />
-              <h1>CHAT</h1>
+              <h1 className="text-xl">CHAT</h1>
             </div>
 
             <div className="flex items-center gap-2 rounded-full bg-[#6b84ad] px-4 py-2">
@@ -147,37 +146,38 @@ export default function ChatPage() {
 
         {/* CHAT AREA */}
         <section className="flex min-h-0 flex-1 flex-col bg-[#f3f3f3]">
-
           {/* MESSAGES */}
           <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-6 sm:py-6">
             <div className="mx-auto w-full max-w-245">
-            {messages.map((message) => {
-              const fromUmkm = message.sender === "umkm";
+              {messages.map((message) => {
+                const fromUmkm = message.sender === "umkm";
 
-              return (
-                <div
-                  key={message.id}
-                  className={`flex w-full ${
-                    fromUmkm ? "mt-4 justify-end" : "mt-6 justify-start sm:mt-8"
-                  }`}
-                >
+                return (
                   <div
-                    className={`max-w-[85%] rounded-2xl px-3 py-3 text-[13px] shadow-md sm:max-w-105 sm:px-4 sm:text-sm ${
+                    key={message.id}
+                    className={`flex w-full ${
                       fromUmkm
-                        ? "bg-white rounded-tr-sm"
-                        : "bg-white rounded-tl-sm"
+                        ? "mt-4 justify-end"
+                        : "mt-6 justify-start sm:mt-8"
                     }`}
                   >
-                    <p className="whitespace-pre-line text-gray-800 leading-relaxed">
-                      {message.text}
-                    </p>
-                    <p className="mt-2 text-right text-xs text-gray-400">
-                      {message.time}
-                    </p>
+                    <div
+                      className={`max-w-[85%] rounded-2xl px-3 py-3 text-[13px] shadow-md sm:max-w-105 sm:px-4 sm:text-sm ${
+                        fromUmkm
+                          ? "bg-white rounded-tr-sm"
+                          : "bg-white rounded-tl-sm"
+                      }`}
+                    >
+                      <p className="whitespace-pre-line text-gray-800 leading-relaxed">
+                        {message.text}
+                      </p>
+                      <p className="mt-2 text-right text-xs text-gray-400">
+                        {message.time}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
             </div>
           </div>
 

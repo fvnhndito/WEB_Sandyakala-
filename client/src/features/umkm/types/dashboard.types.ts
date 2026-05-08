@@ -93,6 +93,37 @@ export type Project = {
   status_project: "Selesai" | "Review" | "Revisi";
 };
 
+// data sementara buat pelamar
+export type Pelamar = {
+  id: number;
+  nama_pelamar: string;
+  posisi_pelamar: string;
+  pendidikan_terakhir_pelamar: string;
+  kontak_pelamar: string;
+  tanggal_melamar: string;
+  status_pelamar: "Diterima" | "Ditolak" | "Menunggu";
+}
+
+export type Wawancara = {
+  id: number;
+  tanggal_wawancara: string;
+  waktu_mulai_wawancara: string;
+  waktu_selesai_wawancara: string;
+  metode_wawancara: string;
+  tautan_wawancara: string;
+  note_wawancara: string;
+  status_wawancara: "Wawancara";
+}
+
+export type Lowongan ={
+  id: number;
+  posisi_lowongan: string;
+  tipe_lowongan: string;
+  tanggal_buka_lowongan: string;
+  tanggal_tutup_lowongan: string;
+  status_lowongan: "Buka" | "Tutup";
+}
+
 export type StatusType = "Draft" | "Review" | "Revisi" | "Selesai";
 
 export type TaskListType = {

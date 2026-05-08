@@ -33,41 +33,38 @@ import AddLowonganPage from "./pages/umkm/AddLowonganPage";
 import VerificationUMKM from "./pages/umkm/VerificationUMKM";
 import ChatPage from "./pages/ChatPage";
 
-
-
 function App() {
   return (
     <Routes>
-      <Route path="/" Component={HomePage} />
-      <Route path="/landing" Component={LandingPage} />
+      <Route path="/" element={<HomePage />} />
+      <Route path="/landing" element={<LandingPage />} />
 
       <Route path="/auth">
-        <Route path="login" Component={LoginPage} />
-        <Route path="register" Component={RegisterPage} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} />
       </Route>
 
       {/* Admin */}
       <Route path="/admin">
-        <Route path="dashboard" Component={DashboardPage} />
-        <Route path="verifikasi-umkm" Component={VerificationPage} />
-        <Route path="verifikasi-umkm/:namaUsaha" Component={DetailVerificationPage} />
-        <Route path="verifikasi-freshgraduate" Component={VerificationFgPage} />
-        <Route path="verifikasi-freshgraduate/:email" Component={DetailVerificationFgPage} />
-        <Route path="laporan" Component={ReportPage} />
-        <Route path="laporan/:namaUsaha" Component={DetailReportPage} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="verifikasi-umkm" element={<VerificationPage />} />
+        <Route path="verifikasi-umkm/:namaUsaha" element={<DetailVerificationPage />} />
+        <Route path="verifikasi-freshgraduate" element={<VerificationFgPage />} />
+        <Route path="verifikasi-freshgraduate/:email" element={<DetailVerificationFgPage />} />
+        <Route path="laporan" element={<ReportPage />} />
+        <Route path="laporan/:namaUsaha" element={<DetailReportPage />} />
       </Route>
 
-        {/* Route for UMKM */}
-        <Route path="/umkm/*">
-          <Route path="home" Component={HomeUmkmPage} />
-          <Route path="lowongan" Component={LowonganUmkmPage} />
-          <Route path="profile" Component={ProfileUmkmPage} />
-          <Route path="report" Component={ReportUMKM} />
-          <Route path="add-lowongan" Component={AddLowonganPage} />
-          <Route path="verification" Component={VerificationUMKM} />
-        </Route>
+      {/* UMKM */}
+      <Route path="/umkm">
+        <Route path="home" element={<HomeUmkmPage />} />
+        <Route path="lowongan" element={<LowonganUmkmPage />} />
+        <Route path="profile" element={<ProfileUmkmPage />} />
+        <Route path="report" element={<ReportUMKM />} />
+        <Route path="add-lowongan" element={<AddLowonganPage />} />
+        <Route path="verification" element={<VerificationUMKM />} />
 
-        <Route path="dashboard" Component={TaskLayoutContent}>
+        <Route path="dashboard" element={<TaskLayoutContent />}>
           <Route index element={<DashboardUmkmPage />} />
           <Route path="data-shift" element={<DataShift />} />
           <Route path="data-project" element={<DataProject />} />
@@ -78,10 +75,11 @@ function App() {
           <Route path="addshift" element={<AddShiftPage />} />
           <Route path="addproject" element={<AddProjectPage />} />
         </Route>
+      </Route>
 
-        <Route path="/chat" Component={ChatPage} />
+      <Route path="/chat" element={<ChatPage />} />
 
-      <Route path="*" Component={NotFound} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

@@ -101,7 +101,7 @@ export default function HomeUmkm() {
               dipantau.
             </p>
             <NavLink
-              to="/umkm/dashboard"
+              to="/umkm/add-lowongan"
               className="px-4 py-1.5 md:px-6 md:py-2 text-sm md:text-base inline-block bg-white rounded-full text-mint font-base shadow-lg hover:bg-mint-200 hover:text-white transition-all"
             >
               Mulai Kolaborasi
@@ -191,7 +191,7 @@ export default function HomeUmkm() {
             </div>
           ))}
           <Link
-            to={"/umkm/home"}
+            to={"/umkm/dashboard/lamaran-masuk"}
             className="border border-gray-300 rounded-xl flex flex-col items-center justify-center p-4 gap-7"
           >
             <div className="h-18 w-18 rounded-full bg-mint-100 flex justify-center items-center">

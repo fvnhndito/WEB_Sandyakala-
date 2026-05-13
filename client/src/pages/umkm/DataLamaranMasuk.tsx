@@ -33,6 +33,7 @@ export default function DataLamaranMasuk() {
   const [catatanWawancara, setCatatanWawancara] = useState("");
 
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const openDetail = (pelamar: Pelamar) => {
     setSelectedPelamar(pelamar);
@@ -65,11 +66,18 @@ export default function DataLamaranMasuk() {
     },
   ];
 
-  const filteredPelamar = selectedStatus
-  ? pelamarList.filter(
-      (p) => p.status_pelamar.toLowerCase() === selectedStatus
-    )
-  : pelamarList;
+  const filteredPelamar = pelamarList.filter((p) => {
+  const matchStatus = selectedStatus
+    ? p.status_pelamar.toLowerCase() === selectedStatus
+    : true;
+  const matchSearch = searchQuery
+    ? p.nama_pelamar.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.posisi_lowongan.toLowerCase().includes(searchQuery.toLowerCase())
+    : true;
+  return matchStatus && matchSearch;
+});
+
+
 
   return (
     <DataTaskLayout
@@ -79,10 +87,11 @@ export default function DataLamaranMasuk() {
       tabs={tabs}
       statusOptions={["Diterima", "Ditolak", "Menunggu"]}
       onStatusChange={(status) => setSelectedStatus(status)}
+      onSearch={(query) => setSearchQuery(query)}
     >
-      <div className="w-full px-6">
-        <div className="border border-neutral-200 rounded-lg overflow-hidden">
-          <table className="w-full table-auto border-collapse text-sm text-neutral-900">
+      <div className="w-full px-2 sm:px-6">
+        <div className="border border-neutral-200 rounded-lg overflow-hidden overflow-x-auto">
+          <table className="w-full min-w-fit table-auto border-collapse text-sm text-neutral-900">
             <thead>
               <tr className="bg-mint/15 text-center">
                 <th className="border px-3 py-2">No</th>

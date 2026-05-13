@@ -9,10 +9,27 @@ import logo from "@/assets/images/logo.png";
 function LandingNavbar() {
   const [active, setActive] = useState("beranda");
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+
+      const sectionIds = ["beranda", "cara-kerja", "keunggulan", "testimoni", "aplikasi"];
+
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sectionIds[i]);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 100) {
+            setActive(sectionIds[i]);
+            break;
+          }
+        }
+      }
+    };
+
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -27,23 +44,26 @@ function LandingNavbar() {
     { id: "beranda", label: "Beranda" },
     { id: "cara-kerja", label: "Cara Kerja" },
     { id: "keunggulan", label: "Keunggulan" },
-    { id: "statistik", label: "Testimoni" },
+    { id: "testimoni", label: "Testimoni" },
     { id: "faq", label: "FAQ" },
+    { id: "aplikasi", label: "Aplikasi" },
   ];
 
   return (
     <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? "shadow-md" : ""} bg-white`}>
       <div className="max-w-6xl mx-auto px-8 py-3 flex items-center justify-between">
+        {/* LOGO */}
         <div className="flex items-center cursor-pointer" onClick={() => scrollTo("beranda")}>
           <img src={logo} alt="FreshStart" className="h-10 w-auto object-contain" />
         </div>
 
-        <ul className="hidden md:flex items-center gap-10 font-bold">
+         {/* NAV LINKS — desktop only */}
+        <ul className="hidden lg:flex items-center gap-8 font-bold">
           {navLinks.map((link) => (
             <li key={link.id}>
               <button
                 onClick={() => scrollTo(link.id)}
-                className={`text-sm font-bold transition-colors duration-200 relative pb-1 ${
+                className={`text-sm font-bold transition-colors duration-200 pb-1 ${
                   active === link.id
                     ? "text-teal-400 underline decoration-4 underline-offset-8"
                     : "text-primary-dark hover:text-teal-400"
@@ -55,13 +75,47 @@ function LandingNavbar() {
           ))}
         </ul>
 
+        {/* BUTTON — desktop only */}
         <button
           onClick={() => navigate("/auth/register")}
-          className="hidden md:block border-2 border-blue-600 text-blue-600 font-semibold text-sm px-5 py-2 rounded-full hover:bg-blue-600 hover:text-white transition-all duration-200"
+          className="hidden lg:block border-2 border-blue-600 text-blue-600 font-semibold text-sm px-5 py-2 rounded-full hover:bg-blue-600 hover:text-white transition-all duration-200"
         >
           Mulai Kolaborasi
         </button>
+
+        {/* HAMBURGER — mobile only */}
+        <button
+          className="lg:hidden flex flex-col gap-1.5 cursor-pointer p-1"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          <span className={`block w-6 h-0.5 bg-gray-700 transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
+          <span className={`block w-6 h-0.5 bg-gray-700 transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
+          <span className={`block w-6 h-0.5 bg-gray-700 transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+        </button>
       </div>
+
+      {/* MOBILE MENU */}
+      {menuOpen && (
+        <div className="lg:hidden bg-white border-t border-gray-100 px-8 py-4 flex flex-col gap-4 shadow-md">
+          {navLinks.map((link) => (
+            <button
+              key={link.id}
+              onClick={() => scrollTo(link.id)}
+              className={`text-sm font-bold text-left transition-colors duration-200 ${
+                active === link.id ? "text-teal-400" : "text-primary-dark hover:text-teal-400"
+              }`}
+            >
+              {link.label}
+            </button>
+          ))}
+          <button
+            onClick={() => { setMenuOpen(false); navigate("/auth/register"); }}
+            className="mt-2 border-2 border-blue-600 text-blue-600 font-semibold text-sm px-5 py-2 rounded-full hover:bg-blue-600 hover:text-white transition-all duration-200 w-fit"
+          >
+            Mulai Kolaborasi
+          </button>
+        </div>
+      )}
     </nav>
   );
 }
@@ -75,7 +129,7 @@ function HeroSection() {
       style={{ backgroundImage: "url('/src/assets/images/hero-landing.png')" }}
     >
       <div className="absolute inset-0 bg-blue-900/60" />
-      <div className="relative z-10 max-w-6xl mx-auto px-6 w-full">
+      <div className="relative z-10 max-w-6xl mx-auto px-28 w-full">
         <div className="max-w-2xl">
           <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight mb-4">
             Usahamu Butuh Bantuan?
@@ -118,7 +172,7 @@ function CaraKerjaSection() {
               key={step.title}
               className="flex items-center gap-4 border border-gray-200 rounded-xl px-5 py-4 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="bg-teal-50 rounded-lg p-2.5 flex-shrink-0">
+              <div className="bg-teal-50 rounded-lg p-2.5 shrink-0">
                 <step.Icon className="w-6 h-6 text-teal-500" />
               </div>
               <p className="font-semibold text-sm text-gray-800">{step.title}</p>
@@ -190,7 +244,7 @@ function KeunggulanSection() {
               className="bg-white border border-gray-200 rounded-xl px-7 py-6 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex items-start gap-4">
-                <div className="bg-teal-50 rounded-lg p-2.5 flex-shrink-0 mt-0.5">
+                <div className="bg-teal-50 rounded-lg p-2.5 shrink-0 mt-0.5">
                   <f.Icon className="w-5 h-5 text-teal-500" />
                 </div>
                 <div>
@@ -216,7 +270,7 @@ function StatistikSection() {
  
   return (
     <section id="statistik" className="bg-slate-700 py-14 px-8">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto px-28">
         <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-3">
           Ribuan usaha sudah merasakan manfaatnya
         </h2>
@@ -273,7 +327,7 @@ function TestimoniSection() {
  
   return (
     <section id="testimoni" className="py-14 bg-white">
-      <div className="max-w-6xl mx-auto px-8">
+      <div className="max-w-6xl mx-auto px-28">
         <h2 className="text-2xl md:text-3xl font-bold text-blue-600 text-center mb-2">
           Kata mereka yang sudah berkolaborasi
         </h2>
@@ -284,7 +338,7 @@ function TestimoniSection() {
           {testimoni.map((t, i) => (
             <div
               key={i}
-              className="min-w-[280px] max-w-[280px] bg-teal-50 rounded-xl p-5 flex-shrink-0"
+              className="min-w-[280px] max-w-[280px] bg-teal-50 rounded-xl p-5 shrink-0"
             >
               <div className="flex gap-0.5 mb-3">
                 {Array.from({ length: 5 }).map((_, j) => (
@@ -293,7 +347,7 @@ function TestimoniSection() {
               </div>
               <p className="text-gray-700 text-sm leading-relaxed mb-5">"{t.pesan}"</p>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-slate-400 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-slate-400 flex items-center justify-center text-white text-xs font-bold shrink-0">
                   {t.inisial}
                 </div>
                 <div>
@@ -313,7 +367,7 @@ function CTASection() {
   const navigate = useNavigate();
   return (
     <section className="py-14 bg-white">
-      <div className="max-w-6xl mx-auto px-8">
+      <div className="max-w-6xl mx-auto px-28">
         <div className="border border-gray-200 rounded-2xl px-10 py-10 flex items-center justify-between gap-8 overflow-hidden">
           <div className="max-w-sm">
             <h2 className="text-xl md:text-2xl font-bold text-blue-600 mb-3 leading-snug">
@@ -334,7 +388,7 @@ function CTASection() {
           <img
             src="/src/assets/images/kolaborasi.png"
             alt="Kolaborasi"
-            className="w-52 md:w-64 object-contain flex-shrink-0 hidden md:block"
+            className="w-52 md:w-64 object-contain shrink-0 hidden md:block"
           />
         </div>
       </div>

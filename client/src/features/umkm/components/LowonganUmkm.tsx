@@ -15,12 +15,18 @@ export default function LowonganUmkm() {
   const [selectedStatus, setSelectedStatus] = useState("");
   const statusOptions = ["Buka", "Tutup", "Segera Tutup"];
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredLowongan = selectedStatus
-    ? mockJobOpenings.filter(
-        (item) => item.status_lowongan.toLowerCase() === selectedStatus,
-      )
-    : mockJobOpenings;
+  const filteredLowongan = mockJobOpenings.filter((item) => {
+    const matchStatus = selectedStatus
+      ? item.status_lowongan.toLowerCase() === selectedStatus
+      : true;
+    const matchSearch = searchQuery
+      ? item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.type.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    return matchStatus && matchSearch;
+  });
 
   return (
     <DashboardUmkmLayout>
@@ -37,6 +43,8 @@ export default function LowonganUmkm() {
           <>
             <div className="flex flex-wrap items-center gap-4 w-full">
               <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari nama atau posisi..."
                 className="rounded-md md:flex-1 focus:border-mint focus:ring-mint-100 text-sm"
               />

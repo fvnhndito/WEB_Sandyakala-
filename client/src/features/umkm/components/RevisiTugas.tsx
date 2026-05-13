@@ -48,10 +48,10 @@ export default function RevisiTugas({ project, onBack }: RevisiTugasProps) {
   };
 
   return (
-    <div className="bg-neutral-400 min-h-screen p-25 flex justify-center">
-      <div className="bg-white w-5xl px-12 py-6 rounded-lg shadow-md">
+    <div className="bg-neutral-400 min-h-screen p-4 sm:p-10 lg:p-25 flex justify-center">
+      <div className="bg-white w-full max-w-5xl px-4 sm:px-4 lg:px-12 py-6 rounded-lg shadow-md">
         {/* HEADER */}
-        <div className="flex flex-row p-5 items-center">
+        <div className="flex flex-row p-3 sm:p-5 items-center">
           <GoArrowLeft
             className="text-3xl mr-5 cursor-pointer"
             onClick={onBack}
@@ -60,11 +60,11 @@ export default function RevisiTugas({ project, onBack }: RevisiTugasProps) {
         </div>
 
         {/* CONTENT */}
-        <div className="flex flex-row gap-5 p-5">
+        <div className="flex flex-col lg:flex-row gap-5 p-3 sm:p-5">
           {/* ISI */}
-          <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-6 flex-1 min-w-0">
             {/* DETAIL TUGAS */}
-            <div className="flex flex-col gap-5 border border-neutral-300 rounded-lg w-xl px-10 py-5">
+            <div className="flex flex-col gap-5 border border-neutral-300 rounded-lg w-full px-4 sm:px-10 py-5">
               <div className="flex flex-col gap-5 border-b pb-5">
                 <div className="flex flex-row justify-between">
                   <h4 className="text-primary-dark text-lg">DETAIL TUGAS</h4>
@@ -114,7 +114,7 @@ export default function RevisiTugas({ project, onBack }: RevisiTugasProps) {
             </div>
 
             {/* CEK HASIL PEKERJAAN */}
-            <div className="flex flex-col gap-5 border border-neutral-300 rounded-lg w-xl px-10 py-5">
+            <div className="flex flex-col gap-5 border border-neutral-300 rounded-lg w-full px-4 sm:px-10 py-5">
               <h4 className="text-primary-dark text-lg">CEK HASIL PEKERJAAN</h4>
               <div className="flex flex-row border justify-between border-neutral-300 py-3 px-5 rounded-md">
                 <div className="flex gap-3 items-center">
@@ -148,7 +148,7 @@ export default function RevisiTugas({ project, onBack }: RevisiTugasProps) {
           </div>
 
           {/* RIWAYAT PERUBAHAN */}
-          <div className="flex flex-col gap-5 border border-neutral-300 rounded-lg w-xl px-5 py-5 h-fit">
+          <div className="flex flex-col gap-5 border border-neutral-300 rounded-lg w-full lg:w-80 xl:w-96 px-5 py-5 h-fit shrink-0">
             <h4 className="text-primary-dark text-lg">RIWAYAT PERUBAHAN</h4>
             {[1, 2, 3].map((_, i) => (
               <div key={i} className="flex flex-row items-start gap-3">
@@ -175,7 +175,7 @@ export default function RevisiTugas({ project, onBack }: RevisiTugasProps) {
           onClick={() => setPopup({ type: "none" })}
         >
           <div
-            className="bg-white rounded-xl shadow-lg p-6 w-130 flex flex-col gap-3"
+            className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm sm:max-w-lg flex flex-col gap-3"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-row justify-between items-center w-full mb-1">
@@ -210,7 +210,7 @@ export default function RevisiTugas({ project, onBack }: RevisiTugasProps) {
           onClick={() => setPopup({ type: "none" })}
         >
           <div
-            className="bg-white rounded-xl shadow-lg p-6 w-150 flex flex-col gap-4"
+            className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm sm:max-w-xl flex flex-col gap-4"
             onClick={(e) => e.stopPropagation()}
           >
             <p className="font-semibold text-xl text-error">Revisi Tugas</p>

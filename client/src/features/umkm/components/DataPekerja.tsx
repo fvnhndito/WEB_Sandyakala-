@@ -47,7 +47,7 @@ export default function DataPekerja() {
   };
 
   const statCardSlot = (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-6 mb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
       {[
         {
           title: "Pekerja Aktif",
@@ -85,6 +85,7 @@ export default function DataPekerja() {
   );
 
   const [employeeList, setEmployeeList] = useState<Employee[]>(employees);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleUpdateStatus = (id: string, status: "Aktif" | "Nonaktif") => {
     setEmployeeList((prev) =>
@@ -99,11 +100,18 @@ export default function DataPekerja() {
 
   const [filterStatus, setFilterStatus] = useState<string>("");
 
-  const filteredEmployees = filterStatus
-    ? employeeList.filter(
-        (e) => e.status_pekerja.toLowerCase() === filterStatus,
-      )
-    : employeeList;
+   const filteredEmployees = employeeList.filter((e) => {
+    const matchStatus = filterStatus
+      ? e.status_pekerja.toLowerCase() === filterStatus
+      : true;
+
+    const matchSearch = searchQuery
+      ? e.nama_pekerja.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        e.posisi_pekerja.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+
+    return matchStatus && matchSearch;
+  });
 
   return (
     <DataTaskLayout
@@ -112,30 +120,31 @@ export default function DataPekerja() {
       statusOptions={["Aktif", "Nonaktif"]}
       statCardSlot={statCardSlot}
       onStatusChange={(status) => setFilterStatus(status)}
+      onSearch={(query) => setSearchQuery(query)}
     >
-      <div className="w-full px-6">
-        <div className="border border-neutral-200 rounded-lg overflow-hidden">
-          <table className="w-full table-auto border-collapse text-sm text-neutral-900">
+      <div className="w-full px-2 sm:px-6">
+        <div className="border border-neutral-200 rounded-lg overflow-hidden overflow-x-auto">
+          <table className=" w-full table-auto border-collapse text-neutral-900">
             <thead>
               <tr className="bg-mint/15 text-center">
-                <th className="border px-3 py-2">No</th>
-                <th className="border px-3 py-2 whitespace-nowrap">
+                <th className="border px-1.5 sm:px-3 py-2 sm:text-sm">No</th>
+                <th className="border  px-1.5 sm:px-3 py-2 sm:text-sm whitespace-nowrap">
                   Nama Pekerja
                 </th>
-                <th className="border px-3 py-2 whitespace-nowrap">
+                <th className="border px-1.5 sm:px-3 py-2  sm:text-sm whitespace-nowrap">
                   Posisi Pekerja
                 </th>
-                <th className="border px-3 py-2 whitespace-nowrap">
+                <th className="border px-1.5 sm:px-3 py-2 sm:text-sm whitespace-nowrap">
                   Jenis Penugasan
                 </th>
-                <th className="border px-3 py-2 whitespace-nowrap">
+                <th className="border px-1.5 sm:px-3 py-2 sm:text-sm whitespace-nowrap">
                   No Handphone
                 </th>
-                <th className="border px-3 py-2 whitespace-nowrap">
+                <th className="border px-1.5 sm:px-3 py-2 sm:text-sm whitespace-nowrap">
                   Mulai Bergabung
                 </th>
-                <th className="border px-3 py-2">Status</th>
-                <th className="border px-3 py-2">Aksi</th>
+                <th className="border px-1.5 sm:px-3 py-2 sm:text-sm">Status</th>
+                <th className="border px-1.5 sm:px-3 py-2 sm:text-sm">Aksi</th>
               </tr>
             </thead>
 
@@ -146,25 +155,25 @@ export default function DataPekerja() {
                     key={Employee.id ?? index}
                     className="hover:bg-neutral-100 transition text-center text-xs"
                   >
-                    <td className="border px-3 py-2">{index + 1}</td>
+                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs">{index + 1}</td>
 
-                    <td className="border px-3 py-2 whitespace-nowrap">
+                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs whitespace-nowrap">
                       {Employee.nama_pekerja}
                     </td>
 
-                    <td className="border px-3 py-2 max-w-160px truncate">
+                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs truncate">
                       {Employee.posisi_pekerja}
                     </td>
 
-                    <td className="border px-3 py-2 capitalize">
+                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs capitalize">
                       {Employee.jenis_penugasan_pekerja}
                     </td>
 
-                    <td className="border px-3 py-2 whitespace-nowrap">
+                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs whitespace-nowrap">
                       {Employee.no_hp_pekerja}
                     </td>
 
-                    <td className="border px-3 py-2 whitespace-nowrap">
+                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs whitespace-nowrap">
                       {new Date(
                         Employee.tanggal_masuk_pekerja,
                       ).toLocaleDateString("id-ID", {
@@ -174,7 +183,7 @@ export default function DataPekerja() {
                       })}
                     </td>
 
-                    <td className="border px-3 py-2">
+                    <td className="border px-1.5 sm:px-3 py-2">
                       <span
                         className={`px-2 py-1 rounded-md text-xs font-semibold ${getStatusBadgeEmployee(
                           Employee.status_pekerja,
@@ -184,7 +193,7 @@ export default function DataPekerja() {
                       </span>
                     </td>
 
-                    <td className="border px-3 py-2">
+                    <td className="border px-1.5 sm:px-3 py-2">
                       {showDetailButtonEmployee.includes(
                         Employee.status_pekerja,
                       ) && (

@@ -1,5 +1,6 @@
 import DataTaskLayout from "@/shared/layouts/DataTaskLayout";
 import { useTask } from "@/pages/umkm/TaskContext";
+import { useState } from "react";
 
 const tabs = [
   {
@@ -21,7 +22,17 @@ const tabs = [
 
 export default function DataDalamSeleksi() {
   const { wawancaraList } = useTask();
+  const [searchQuery, setSearchQuery] = useState("");
 
+  const filteredWawancara = wawancaraList.filter((p) =>
+    searchQuery
+      ? p.nama_pelamar.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.posisi_lowongan.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.pendidikan_terakhir_pelamar
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      : true,
+  );
   return (
     <DataTaskLayout
       title="Wawancara Pelamar"
@@ -29,10 +40,11 @@ export default function DataDalamSeleksi() {
       activeTab="dalamSeleksi"
       tabs={tabs}
       statusOptions={["Wawancara"]}
+      onSearch={(query) => setSearchQuery(query)}
     >
-      <div className="w-full px-6">
-        <div className="border border-neutral-200 rounded-lg overflow-hidden">
-          <table className="w-full table-auto border-collapse text-sm text-neutral-900">
+      <div className="w-full px-2 sm:px-6">
+        <div className="border border-neutral-200 rounded-lg overflow-hidden overflow-x-auto">
+          <table className="w-full min-w-fit table-auto border-collapse text-sm text-neutral-900">
             <thead>
               <tr className="bg-mint/15 text-center">
                 <th className="border px-3 py-2">No</th>
@@ -53,8 +65,8 @@ export default function DataDalamSeleksi() {
               </tr>
             </thead>
             <tbody>
-              {wawancaraList.length > 0 ? (
-                wawancaraList.map((p, index) => (
+              {filteredWawancara.length > 0 ? (
+                filteredWawancara.map((p, index) => (
                   <tr
                     key={p.id}
                     className="hover:bg-neutral-100 transition text-center text-xs"

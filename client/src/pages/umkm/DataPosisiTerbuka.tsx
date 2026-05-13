@@ -54,12 +54,18 @@ export default function DataPosisiTerbuka() {
     "Buka",
   );
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredLowongan = selectedStatus
-  ? dataLowongan.filter(
-      (item) => item.status_lowongan.toLowerCase() === selectedStatus
-    )
-  : dataLowongan;
+  const filteredLowongan = dataLowongan.filter((item) => {
+  const matchStatus = selectedStatus
+    ? item.status_lowongan.toLowerCase() === selectedStatus
+    : true;
+  const matchSearch = searchQuery
+    ? item.posisi_lowongan.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.tipe_lowongan.toLowerCase().includes(searchQuery.toLowerCase())
+    : true;
+  return matchStatus && matchSearch;
+});
 
   const openEdit = (item: Lowongan) => {
     setSelected(item);
@@ -116,11 +122,11 @@ export default function DataPosisiTerbuka() {
       tabs={tabs}
       statusOptions={["Buka", "Tutup", "Segera Tutup"]}
       onStatusChange={(status) => setSelectedStatus(status)}
-
+      onSearch={(query) => setSearchQuery(query)}
     >
-      <div className="w-full px-6">
-        <div className=" border border-neutral-200 rounded-lg overflow-hidden">
-          <table className="w-full table-auto border-collapse text-sm text-neutral-900">
+      <div className="w-full px-2 sm:px-6">
+        <div className=" border border-neutral-200 rounded-lg overflow-hidden overflow-x-auto">
+          <table className="w-full min-w-fit table-auto border-collapse text-sm text-neutral-900">
             <thead>
               <tr className="bg-mint/15 text-center">
                 <th className="border px-3 py-2">No</th>

@@ -122,6 +122,7 @@ export type Lowongan ={
    id: number;
   posisi_lowongan: string;
   tipe_lowongan: string;
+  jam_kerja?: "pagi" | "siang" | "malam";
   tanggal_buka_lowongan: string;
   tanggal_tutup_lowongan: string;
   status_lowongan: "Buka" | "Tutup" | "Segera Tutup";

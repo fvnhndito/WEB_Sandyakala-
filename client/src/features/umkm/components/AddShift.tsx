@@ -15,6 +15,7 @@ interface AddShiftProps {
   type: "pagi" | "siang" | "malam";
   shifts: Shift[];
   setShifts: React.Dispatch<React.SetStateAction<Shift[]>>;
+  jamKerjaLowongan?: "pagi" | "siang" | "malam";
 }
 
 interface IFormInput {
@@ -27,7 +28,7 @@ interface IFormInput {
   jenisShift: "pagi" | "siang" | "malam";
 }
 
-export default function AddShift({ type, shifts, setShifts }: AddShiftProps) {
+export default function AddShift({ type, shifts, setShifts, jamKerjaLowongan }: AddShiftProps) {
   const {
     register,
     handleSubmit,
@@ -39,8 +40,24 @@ export default function AddShift({ type, shifts, setShifts }: AddShiftProps) {
   });
 
   const [activeType, setActiveType] = useState<"pagi" | "siang" | "malam">(
-    type,
+    jamKerjaLowongan ?? type  // ← default dari lowongan
   );
+
+  // Tambah state warning
+  const [showWarning, setShowWarning] = useState(false);
+
+  // Ubah handler pilih jenis shift
+  const handleJenisShiftChange = (jenisItem: "pagi" | "siang" | "malam") => {
+    setActiveType(jenisItem);
+    setShift((prev) => ({ ...prev, jenis_shift: jenisItem }));
+    
+    // Tampilkan warning jika berbeda dari lowongan
+    if (jamKerjaLowongan && jenisItem !== jamKerjaLowongan) {
+      setShowWarning(true);
+    } else {
+      setShowWarning(false);
+    }
+  };
 
   const [shift, setShift] = useState<Shift>({
     id: 1,
@@ -232,29 +249,39 @@ export default function AddShift({ type, shifts, setShifts }: AddShiftProps) {
 
           {/* Jenis Shift */}
           <div className="w-fit mt-3">
-            <label>
-              <span className="text-sm leading-base">Jenis Shift</span>
-              <div className="w-fit flex flex-row mt-2 gap-3">
-                {(["pagi", "siang", "malam"] as const).map((jenisItem) => (
-                  <Button
-                    key={jenisItem}
-                    type="button"
-                    onClick={() => {
-                      setActiveType(jenisItem);
-                      setShift((prev) => ({ ...prev, jenis_shift: jenisItem }));
-                    }}
-                    className={`w-fit px-3 border capitalize ${
-                      activeType === jenisItem
-                        ? "bg-teal-100 border-primary-dark text-primary-dark hover:bg-teal-100 font-semibold"
-                        : "bg-white border-neutral-900 text-neutral-900 hover:bg-gray-100"
-                    }`}
-                  >
-                    {jenisItem.charAt(0).toUpperCase() + jenisItem.slice(1)}
-                  </Button>
-                ))}
-              </div>
-            </label>
-          </div>
+  <label>
+    <span className="text-sm leading-base">Jenis Shift</span>
+    <div className="w-fit flex flex-row mt-2 gap-3">
+      {(["pagi", "siang", "malam"] as const).map((jenisItem) => (
+        <Button
+          key={jenisItem}
+          type="button"
+          onClick={() => handleJenisShiftChange(jenisItem)} // ← pakai handler baru
+          className={`w-fit px-3 border capitalize ${
+            activeType === jenisItem
+              ? "bg-teal-100 border-primary-dark text-primary-dark hover:bg-teal-100 font-semibold"
+              : "bg-white border-neutral-900 text-neutral-900 hover:bg-gray-100"
+          }`}
+        >
+          {jenisItem.charAt(0).toUpperCase() + jenisItem.slice(1)}
+        </Button>
+      ))}
+    </div>
+
+    {/* Warning muncul jika berbeda dari lowongan */}
+    {showWarning && jamKerjaLowongan && (
+      <div className="mt-2 flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2">
+        <span className="text-yellow-500 text-sm mt-0.5">⚠️</span>
+        <p className="text-xs text-yellow-700">
+          Lowongan ini ditetapkan untuk shift{" "}
+          <strong className="capitalize">{jamKerjaLowongan}</strong>.
+          Yakin ingin assign shift{" "}
+          <strong className="capitalize">{activeType}</strong>?
+        </p>
+      </div>
+    )}
+  </label>
+</div>
 
           {/* List Tugas Shift */}
           <label htmlFor="" className="flex flex-col mt-3">

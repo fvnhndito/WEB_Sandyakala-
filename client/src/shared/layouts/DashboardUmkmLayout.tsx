@@ -1,6 +1,6 @@
 import { cn } from "@/shared/lib/utils";
-import { Link, NavLink } from "react-router-dom";
-import { useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import logo from "@/assets/images/logo.png";
 
@@ -43,6 +43,216 @@ const NavItem = ({
   );
 };
 
+const profileMenuItems = [
+  { label: "Keamanan Akun", path: "modal" },
+  { label: "Chat", path: "/chat" },
+  { label: "Keluar", path: "/auth/login" },
+];
+
+function UbahAkunModal({ onClose }: { onClose: () => void }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = () => {
+    setError("");
+
+    if (!username && !password) {
+      setError("Isi minimal username atau password baru.");
+      return;
+    }
+
+    if (password && password !== confirmPassword) {
+      setError("Konfirmasi password tidak cocok.");
+      return;
+    }
+
+    if (password && password.length < 6) {
+      setError("Password minimal 6 karakter.");
+      return;
+    }
+
+    // TODO: panggil API update akun di sini
+    setSuccess(true);
+    setTimeout(() => {
+      onClose();
+      setSuccess(false);
+    }, 1500);
+  };
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+          className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-bold text-gray-800">Keamanan Akun</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+            >
+              <IoClose className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Form */}
+          <div className="flex flex-col gap-4">
+            {/* Username */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                Username Baru
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Masukkan username baru"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+              />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                Password Baru
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Masukkan password baru"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs cursor-pointer"
+                >
+                </button>
+              </div>
+            </div>
+
+            {/* Konfirmasi Password */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                Konfirmasi Password
+              </label>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Ulangi password baru"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+              />
+            </div>
+
+            {/* Error */}
+            {error && (
+              <p className="text-red-500 text-xs">{error}</p>
+            )}
+
+            {/* Success */}
+            {success && (
+              <p className="text-teal-500 text-xs font-medium">
+                Akun berhasil diperbarui!
+              </p>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={onClose}
+              className="flex-1 border border-gray-300 rounded-lg py-2 text-sm text-gray-600 hover:bg-gray-50 transition cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="flex-1 bg-teal-400 hover:bg-teal-500 text-white rounded-lg py-2 text-sm font-medium transition cursor-pointer"
+            >
+              Simpan
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function ProfileMenu() {
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const navigate = useNavigate();
+
+  const handleClick = (path: string | null) => {
+    setIsMenuOpen(false);
+    if (path === "modal") {
+      setIsModalOpen(true);
+    } else if (path) {
+      navigate(path);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsMenuOpen((prev) => !prev)}
+        className="flex items-center gap-1 rounded-full py-0.5 pr-2 pl-0.5 focus:outline-none cursor-pointer"
+      >
+        <img
+          src="https://i.pravatar.cc/150?img=11"
+          alt="profile"
+          className="h-8 w-8 rounded-full border border-gray-900 object-cover"
+        />
+      </button>
+
+      {isMenuOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setIsMenuOpen(false)}
+          />
+          <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg border border-gray-100 z-20 py-1">
+            {profileMenuItems.map(({ label, path }, key) => {
+              const isLastItem = key === profileMenuItems.length - 1;
+              return (
+                <button
+                  key={label}
+                  onClick={() => handleClick(path)}
+                  className={`w-full text-left px-4 py-2 text-sm transition-colors cursor-pointer ${
+                    isLastItem
+                      ? "text-red-500 hover:bg-red-50"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          {isModalOpen && (
+        <UbahAkunModal onClose={() => setIsModalOpen(false)} />
+      )}
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function DashboardUmkmLayout({
   children,
 }: {
@@ -66,12 +276,8 @@ export default function DashboardUmkmLayout({
               </li>
             ))}
 
-            <div className="h-10 w-10 bg-gray-100 rounded-full shadow ms-2 border border-slate-300 overflow-hidden cursor-pointer">
-              <img
-                src="https://i.pravatar.cc/150?img=11"
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
+            <div>
+              <ProfileMenu/>
             </div>
           </ul>
 

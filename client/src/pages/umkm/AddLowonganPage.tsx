@@ -172,13 +172,39 @@ export default function AddLowonganPage() {
                 </div>
               )}
 
-              {/* milestone untuk project */}
+              {/* project details */}
               {jobType === "project" && (
-                <div className="mt-2 md:col-span-2">
-                  <label className="text-[14px] font-bold text-gray-800 mb-3 block">
-                    Milestone
-                  </label>
-                  <div className="flex flex-col gap-3">
+                <div className="mt-2 md:col-span-2 flex flex-col gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="flex flex-col gap-2 w-full">
+                      <label className="text-[14px] font-bold text-gray-800">
+                        Tanggal Mulai Project
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="date"
+                          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] placeholder:text-gray-400 text-gray-700"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2 w-full">
+                      <label className="text-[14px] font-bold text-gray-800">
+                        Tanggal Akhir Project
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="date"
+                          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] placeholder:text-gray-400 text-gray-700"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[14px] font-bold text-gray-800 mb-3 block">
+                      Milestone
+                    </label>
+                    <div className="flex flex-col gap-3">
                     {tasks.map((task, index) => (
                       <div
                         key={index}
@@ -215,6 +241,7 @@ export default function AddLowonganPage() {
                     </Button>
                   </div>
                 </div>
+              </div>
               )}
             </div>
           </div>

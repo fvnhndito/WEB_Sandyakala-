@@ -4,9 +4,19 @@ import type { NextFunction, Request, Response } from "express";
 import { AppError } from "./common/utils/AppError.js";
 import router from "./routes/index.js";
 import multer from "multer";
+import cors from "cors";
 
-const app = express();
 const port = 3000;
+const app = express();
+
+const corsOptions = {
+  origin: ["http://localhost:5173", "http://localhost:62637"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

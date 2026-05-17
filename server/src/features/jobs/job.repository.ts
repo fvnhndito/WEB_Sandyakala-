@@ -361,6 +361,19 @@ const JobRepository = {
       connection.release();
     }
   },
+
+  deleteJob: async (jobId: number, umkmId: number) => {
+    const [result]: any = await pool.execute(
+      "DELETE FROM jobs WHERE id = ? AND umkm_id = ?",
+      [jobId, umkmId],
+    );
+
+    if (result.affectedRows === 0) {
+      throw new Error("NOT_FOUND_OR_UNAUTHORIZED");
+    }
+
+    return true;
+  },
 };
 
 export default JobRepository;

@@ -140,6 +140,23 @@ const JobService = {
 
     return true;
   },
+
+  deleteJob: async (jobId: number, userId: string | number) => {
+    const umkmId = await getVerifiedUmkmId(userId, true);
+
+    try {
+      await JobRepository.deleteJob(jobId, umkmId);
+    } catch (error: any) {
+      if (error.message === "NOT_FOUND_OR_UNAUTHORIZED") {
+        throw new NotFoundError(
+          "Lowongan tidak ditemukan atau Anda tidak berhak menghapusnya.",
+        );
+      }
+      throw error;
+    }
+
+    return true;
+  },
 };
 
 export default JobService;

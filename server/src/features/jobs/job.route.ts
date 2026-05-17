@@ -35,4 +35,10 @@ jobRouter.put(
   asyncHandler(JobController.update),
 );
 
+jobRouter.delete(
+  "/:id",
+  safeGuard(["UMKM"]),
+  asyncHandler(JobController.delete),
+);
+
 export default jobRouter;

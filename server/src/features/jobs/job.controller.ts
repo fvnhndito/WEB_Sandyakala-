@@ -70,6 +70,20 @@ const JobController = {
       message: "Lowongan pekerjaan berhasil diperbarui",
     });
   },
+
+  delete: async (req: Request, res: Response) => {
+    const jobId = Number(req.params.id);
+    if (isNaN(jobId)) throw new BadRequestError("ID Lowongan tidak valid");
+
+    const userId = req.user!.id;
+
+    await JobService.deleteJob(jobId, userId);
+
+    res.status(200).json({
+      success: true,
+      message: "Lowongan pekerjaan berhasil dihapus",
+    });
+  },
 };
 
 export default JobController;

@@ -107,10 +107,10 @@ const JobRepository = {
         j.*, 
         u.business_name, 
         d.logo_url, 
-        u.business_address 
+        u.regency 
       FROM jobs j
       JOIN umkm_profiles u ON j.umkm_id = u.id_umkm
-      JOIN umkm_documents d ON j.umkm_id = d.umkm_id -- Ambil logo dari tabel dokumen
+      JOIN umkm_documents d ON j.umkm_id = d.umkm_id
       WHERE j.id = ?
     `;
     const [jobRows]: any = await pool.execute(queryJob, [jobId]);
@@ -167,7 +167,7 @@ const JobRepository = {
         j.salary_min, 
         j.salary_max, 
         u.business_name, 
-        u.business_address
+        u.regency
       FROM jobs j
       JOIN umkm_profiles u ON j.umkm_id = u.id_umkm
       WHERE 1=1

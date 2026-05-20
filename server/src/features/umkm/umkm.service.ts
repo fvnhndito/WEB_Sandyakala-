@@ -30,6 +30,15 @@ const UmkmService = {
     };
 
     try {
+      if (data.nib) {
+        const isNibExists = await UmkmRepository.checkNibExists(data.nib);
+        if (isNibExists) {
+          throw new BadRequestError(
+            "NIB ini sudah terdaftar. Silakan periksa kembali atau gunakan NIB lain.",
+          );
+        }
+      }
+
       const umkmId = await UmkmRepository.createUmkmProfileAndDocs(
         userId,
         data,

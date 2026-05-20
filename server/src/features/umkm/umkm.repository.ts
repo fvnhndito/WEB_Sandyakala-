@@ -14,8 +14,8 @@ const UmkmRepository = {
 
       const queryProfile = `
         INSERT INTO umkm_profiles 
-        (user_id, owner_name, nib, business_name, business_category, employee_count, business_address, business_email, business_phone, status, created_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', NOW())
+        (user_id, owner_name, nib, business_name, business_category, employee_count, established_at, province, regency, district, subdistrict, website_sosmed, business_email, business_phone, status, created_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', NOW())
       `;
 
       const [profileResult] = await connection.execute(queryProfile, [
@@ -25,7 +25,12 @@ const UmkmRepository = {
         data.business_name,
         data.business_category,
         data.employee_count,
-        data.business_address,
+        data.established_at,
+        data.province,
+        data.regency,
+        data.district,
+        data.subdistrict,
+        data.website_sosmed || null,
         data.business_email,
         data.business_phone,
       ]);
@@ -53,6 +58,14 @@ const UmkmRepository = {
     } finally {
       connection.release();
     }
+  },
+
+  checkNibExists: async (nib: string): Promise<boolean> => {
+    const [rows]: any = await pool.execute(
+      "SELECT id_umkm FROM umkm_profiles WHERE nib = ?",
+      [nib],
+    );
+    return rows.length > 0;
   },
 };
 

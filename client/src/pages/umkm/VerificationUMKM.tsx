@@ -15,6 +15,7 @@ import {
   FiUploadCloud,
 } from "react-icons/fi";
 import { HiOutlineBadgeCheck } from "react-icons/hi";
+import { useAppSelector } from "@/shared/stores/hook";
 
 type VerificationStatus =
   | "step1"
@@ -38,6 +39,7 @@ const ForkKnifeIcon = ({ className }: { className?: string }) => (
 );
 
 export default function VerificationUMKM() {
+  const { role } = useAppSelector((state) => state.auth);
   const [status, setStatus] = useState<VerificationStatus>("step1");
   const navigate = useNavigate();
 
@@ -53,7 +55,11 @@ export default function VerificationUMKM() {
   const ktpInputRef = useRef<HTMLInputElement>(null);
   const nibInputRef = useRef<HTMLInputElement>(null);
 
-  const handleDrag = (e: React.DragEvent, type: "logo" | "ktp" | "nib", active: boolean) => {
+  const handleDrag = (
+    e: React.DragEvent,
+    type: "logo" | "ktp" | "nib",
+    active: boolean,
+  ) => {
     e.preventDefault();
     e.stopPropagation();
     if (type === "logo") setDragActiveLogo(active);
@@ -76,7 +82,10 @@ export default function VerificationUMKM() {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "logo" | "ktp" | "nib") => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "logo" | "ktp" | "nib",
+  ) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (type === "logo") setLogoFile(file);
@@ -88,14 +97,22 @@ export default function VerificationUMKM() {
   const userStr = localStorage.getItem("user");
   const user = userStr ? JSON.parse(userStr) : null;
   const userEmail = user?.email || "";
-  const statusKey = userEmail ? "umkm_verification_status_" + userEmail : "umkm_verification_status";
-  const profileKey = userEmail ? "registered_umkm_profile_" + userEmail : "registered_umkm_profile";
+  const statusKey = userEmail
+    ? "umkm_verification_status_" + userEmail
+    : "umkm_verification_status";
+  const profileKey = userEmail
+    ? "registered_umkm_profile_" + userEmail
+    : "registered_umkm_profile";
 
   const handleProceedToPending = () => {
-    const selectedProvinsiName = provinsi.find((p) => p.id === selectedProvinsi)?.name || "";
-    const selectedKabupatenName = kabupaten.find((k) => k.id === selectedKabupaten)?.name || "";
-    const selectedKecamatanName = kecamatan.find((kc) => kc.id === selectedKecamatan)?.name || "";
-    const selectedDesaName = desa.find((d) => d.id === selectedDesa)?.name || "";
+    const selectedProvinsiName =
+      provinsi.find((p) => p.id === selectedProvinsi)?.name || "";
+    const selectedKabupatenName =
+      kabupaten.find((k) => k.id === selectedKabupaten)?.name || "";
+    const selectedKecamatanName =
+      kecamatan.find((kc) => kc.id === selectedKecamatan)?.name || "";
+    const selectedDesaName =
+      desa.find((d) => d.id === selectedDesa)?.name || "";
 
     const saveProfileData = (logoBase64?: string) => {
       const profile = {
@@ -108,15 +125,27 @@ export default function VerificationUMKM() {
         businessEmail,
         businessPhone,
         websiteSosmed,
-        address: [selectedDesaName, selectedKecamatanName, selectedKabupatenName, selectedProvinsiName].filter(Boolean).join(", ") || "Jakarta",
-        createdAt: new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' }),
-        businessLogo: logoBase64 || ""
+        address:
+          [
+            selectedDesaName,
+            selectedKecamatanName,
+            selectedKabupatenName,
+            selectedProvinsiName,
+          ]
+            .filter(Boolean)
+            .join(", ") || "Jakarta",
+        createdAt: new Date().toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }),
+        businessLogo: logoBase64 || "",
       };
       localStorage.setItem(profileKey, JSON.stringify(profile));
       localStorage.setItem(statusKey, "pending");
       if (userEmail) {
         localStorage.setItem("latest_registered_umkm_email", userEmail);
-        
+
         let registeredEmails = [];
         const savedEmailsStr = localStorage.getItem("registered_umkm_emails");
         if (savedEmailsStr) {
@@ -131,7 +160,10 @@ export default function VerificationUMKM() {
         }
         if (!registeredEmails.includes(userEmail)) {
           registeredEmails.push(userEmail);
-          localStorage.setItem("registered_umkm_emails", JSON.stringify(registeredEmails));
+          localStorage.setItem(
+            "registered_umkm_emails",
+            JSON.stringify(registeredEmails),
+          );
         }
       }
       setStatus("pending");
@@ -555,7 +587,7 @@ export default function VerificationUMKM() {
                     className="border border-gray-200 rounded-lg px-4 py-2.5 text-[13px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
-                
+
                 {/* LOKASI */}
                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* PROVINSI */}
@@ -982,12 +1014,27 @@ export default function VerificationUMKM() {
             {/* Detail grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-12">
               {[
-                { label: "Nama Pemilik", value: profileData?.ownerName || "Jane Doe" },
-                { label: "Email", value: profileData?.businessEmail || "janedoe@gmail.com" },
-                { label: "No Telepon", value: profileData?.businessPhone || "08123456789" },
-                { label: "Jumlah Karyawan", value: profileData?.employeeCount || "10-50 Karyawan" },
+                {
+                  label: "Nama Pemilik",
+                  value: profileData?.ownerName || "Jane Doe",
+                },
+                {
+                  label: "Email",
+                  value: profileData?.businessEmail || "janedoe@gmail.com",
+                },
+                {
+                  label: "No Telepon",
+                  value: profileData?.businessPhone || "08123456789",
+                },
+                {
+                  label: "Jumlah Karyawan",
+                  value: profileData?.employeeCount || "10-50 Karyawan",
+                },
                 { label: "Alamat", value: profileData?.address || "Jakarta" },
-                { label: "Tanggal Bergabung", value: profileData?.createdAt || "29 Maret 2025" },
+                {
+                  label: "Tanggal Bergabung",
+                  value: profileData?.createdAt || "29 Maret 2025",
+                },
               ].map(({ label, value }) => (
                 <div key={label} className="flex flex-col gap-0.5">
                   <span className="text-[12px] text-gray-400">{label}</span>
@@ -1132,10 +1179,14 @@ export default function VerificationUMKM() {
     }
   };
 
+  // Guard
+  if (role !== "USER") {
+    navigate("/");
+  }
+
   /* ─────────────────────── RENDER ─────────────────────── */
   return (
     <div className="w-full min-h-screen bg-[#F1F5F9]">
-
       {/* ── Page Header ── */}
       <div className="bg-[#E2E8F0] pt-10 pb-20 px-4 md:px-8">
         <div className="container mx-auto max-w-4xl">

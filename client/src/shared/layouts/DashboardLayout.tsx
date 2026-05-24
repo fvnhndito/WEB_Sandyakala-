@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { BiNotepad, BiSolidGridAlt, BiSolidUser, BiMenu } from "react-icons/bi";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import { NavLink, useNavigate } from "react-router";
+import { Navigate, NavLink, useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import LogoFreshstart from "@/assets/images/Logo FreshStart.png";
 import Dropdown from "../components/dropdown";
+import { useAppSelector } from "../stores/hook";
 
 const menus = [
   { name: "Dashboard", icon: BiSolidGridAlt, to: "/admin/dashboard" },
@@ -62,8 +63,13 @@ export default function DashboardLayout({
   description,
   showBackButton = false,
 }: DashboardLayoutProps) {
+  const authSelector = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  if (authSelector.role !== "ADMIN") {
+    return <Navigate to="/" />;
+  }
 
   return (
     <div className="min-h-screen flex bg-info-100/15 overflow-hidden">

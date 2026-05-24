@@ -5,6 +5,19 @@ import { MdOutlineTrackChanges, MdOutlineLayersClear } from "react-icons/md";
 import { HiOutlineLightningBolt } from "react-icons/hi";
 import { FiUserPlus } from "react-icons/fi";
 import logo from "@/assets/images/logo.png";
+import { useAppSelector } from "@/shared/stores/hook";
+
+const navigateToDashboard = (role: string) => {
+  if (role === "UMKM") {
+    return "/umkm/home";
+  } else if (role === "ADMIN") {
+    return "/admin/dashboard";
+  } else if (role === "USER") {
+    return "/umkm/verification";
+  } else {
+    return "/auth/register";
+  }
+};
 
 function LandingNavbar() {
   const [active, setActive] = useState("beranda");
@@ -12,11 +25,19 @@ function LandingNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
+  const { role } = useAppSelector((state) => state.auth);
+
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 20);
 
-      const sectionIds = ["beranda", "cara-kerja", "keunggulan", "testimoni", "aplikasi"];
+      const sectionIds = [
+        "beranda",
+        "cara-kerja",
+        "keunggulan",
+        "testimoni",
+        "aplikasi",
+      ];
 
       for (let i = sectionIds.length - 1; i >= 0; i--) {
         const el = document.getElementById(sectionIds[i]);
@@ -50,14 +71,23 @@ function LandingNavbar() {
   ];
 
   return (
-    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? "shadow-md" : ""} bg-white`}>
+    <nav
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? "shadow-md" : ""} bg-white`}
+    >
       <div className="max-w-6xl mx-auto px-8 py-3 flex items-center justify-between">
         {/* LOGO */}
-        <div className="flex items-center cursor-pointer" onClick={() => scrollTo("beranda")}>
-          <img src={logo} alt="FreshStart" className="h-10 w-auto object-contain" />
+        <div
+          className="flex items-center cursor-pointer"
+          onClick={() => scrollTo("beranda")}
+        >
+          <img
+            src={logo}
+            alt="FreshStart"
+            className="h-10 w-auto object-contain"
+          />
         </div>
 
-         {/* NAV LINKS — desktop only */}
+        {/* NAV LINKS — desktop only */}
         <ul className="hidden lg:flex items-center gap-8 font-bold">
           {navLinks.map((link) => (
             <li key={link.id}>
@@ -77,10 +107,10 @@ function LandingNavbar() {
 
         {/* BUTTON — desktop only */}
         <button
-          onClick={() => navigate("/auth/register")}
+          onClick={() => navigate(navigateToDashboard(role))}
           className="hidden lg:block border-2 border-blue-600 text-blue-600 font-semibold text-sm px-5 py-2 rounded-full hover:bg-blue-600 hover:text-white transition-all duration-200"
         >
-          Mulai Kolaborasi
+          {role ? "Dashboard" : "Mulai Kolaborasi"}
         </button>
 
         {/* HAMBURGER — mobile only */}
@@ -88,9 +118,15 @@ function LandingNavbar() {
           className="lg:hidden flex flex-col gap-1.5 cursor-pointer p-1"
           onClick={() => setMenuOpen(!menuOpen)}
         >
-          <span className={`block w-6 h-0.5 bg-gray-700 transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
-          <span className={`block w-6 h-0.5 bg-gray-700 transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
-          <span className={`block w-6 h-0.5 bg-gray-700 transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+          <span
+            className={`block w-6 h-0.5 bg-gray-700 transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-2" : ""}`}
+          />
+          <span
+            className={`block w-6 h-0.5 bg-gray-700 transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`}
+          />
+          <span
+            className={`block w-6 h-0.5 bg-gray-700 transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`}
+          />
         </button>
       </div>
 
@@ -102,17 +138,22 @@ function LandingNavbar() {
               key={link.id}
               onClick={() => scrollTo(link.id)}
               className={`text-sm font-bold text-left transition-colors duration-200 ${
-                active === link.id ? "text-teal-400" : "text-primary-dark hover:text-teal-400"
+                active === link.id
+                  ? "text-teal-400"
+                  : "text-primary-dark hover:text-teal-400"
               }`}
             >
               {link.label}
             </button>
           ))}
           <button
-            onClick={() => { setMenuOpen(false); navigate("/auth/register"); }}
+            onClick={() => {
+              setMenuOpen(false);
+              navigate(navigateToDashboard(role));
+            }}
             className="mt-2 border-2 border-blue-600 text-blue-600 font-semibold text-sm px-5 py-2 rounded-full hover:bg-blue-600 hover:text-white transition-all duration-200 w-fit"
           >
-            Mulai Kolaborasi
+            {role ? "Dashboard" : "Mulai Kolaborasi"}
           </button>
         </div>
       )}
@@ -122,6 +163,8 @@ function LandingNavbar() {
 
 function HeroSection() {
   const navigate = useNavigate();
+  const { role } = useAppSelector((state) => state.auth);
+
   return (
     <section
       id="beranda"
@@ -141,10 +184,10 @@ function HeroSection() {
             bagi lulusan baru di Indonesia!
           </p>
           <button
-            onClick={() => navigate("/auth/register")}
+            onClick={() => navigate(navigateToDashboard(role))}
             className="bg-white text-blue-600 font-semibold px-6 py-2.5 rounded-full shadow-lg hover:bg-green-50 transition-all duration-200 text-sm md:text-base"
           >
-            Mulai Kolaborasi
+            {role ? "Dashboard" : "Mulai Kolaborasi"}
           </button>
         </div>
       </div>
@@ -156,7 +199,10 @@ function CaraKerjaSection() {
   const steps = [
     { Icon: FiUserPlus, title: "Daftar & Buat akun usaha" },
     { Icon: BsPersonCheck, title: "Posting & Rekrut pekerja yang sesuai" },
-    { Icon: HiOutlineLightningBolt, title: "Usaha berkembang efisien & efektif" },
+    {
+      Icon: HiOutlineLightningBolt,
+      title: "Usaha berkembang efisien & efektif",
+    },
   ];
 
   return (
@@ -175,7 +221,9 @@ function CaraKerjaSection() {
               <div className="bg-teal-50 rounded-lg p-2.5 shrink-0">
                 <step.Icon className="w-6 h-6 text-teal-500" />
               </div>
-              <p className="font-semibold text-sm text-gray-800">{step.title}</p>
+              <p className="font-semibold text-sm text-gray-800">
+                {step.title}
+              </p>
             </div>
           ))}
         </div>
@@ -248,8 +296,12 @@ function KeunggulanSection() {
                   <f.Icon className="w-5 h-5 text-teal-500" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">{f.title}</h4>
-                  <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">
+                    {f.title}
+                  </h4>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    {f.desc}
+                  </p>
                 </div>
               </div>
             </div>
@@ -267,7 +319,7 @@ function StatistikSection() {
     { value: "8.400", suffix: "+", label: "Proyek selesai" },
     { value: "94", suffix: "%", label: "UMKM puas & kembali lagi" },
   ];
- 
+
   return (
     <section id="statistik" className="bg-slate-700 py-14 px-8">
       <div className="max-w-6xl mx-auto px-28">
@@ -275,11 +327,15 @@ function StatistikSection() {
           Ribuan usaha sudah merasakan manfaatnya
         </h2>
         <p className="text-slate-300 text-sm mb-10 max-w-md">
-          FreshStart tumbuh bersama ekosistem UMKM dan talenta muda Indonesia setiap harinya.
+          FreshStart tumbuh bersama ekosistem UMKM dan talenta muda Indonesia
+          setiap harinya.
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {stats.map((s, i) => (
-            <div key={i} className={`${i < 3 ? "border-r border-slate-500 pr-6" : ""}`}>
+            <div
+              key={i}
+              className={`${i < 3 ? "border-r border-slate-500 pr-6" : ""}`}
+            >
               <p className="text-3xl md:text-4xl font-extrabold text-white">
                 {s.value}
                 <span className="text-green-400 ml-1">{s.suffix}</span>
@@ -299,32 +355,36 @@ function TestimoniSection() {
       nama: "Pak Andi Setiawan",
       usaha: "Batik Sari Nusantara · Fashion, Solo",
       bintang: 5,
-      pesan: "Task Track-nya sangat membantu. Saya bisa lihat progress desainer saya kapan saja, bahkan saat sedang di toko. Tidak perlu WhatsApp bolak-balik lagi. Kerja jadi lebih tenang dan efisien.",
+      pesan:
+        "Task Track-nya sangat membantu. Saya bisa lihat progress desainer saya kapan saja, bahkan saat sedang di toko. Tidak perlu WhatsApp bolak-balik lagi. Kerja jadi lebih tenang dan efisien.",
       inisial: "PA",
     },
     {
       nama: "Pak Budi Santoso",
       usaha: "Warung Pak Budi · Kuliner, Surabaya",
       bintang: 4,
-      pesan: "Warung saya butuh koki harian tapi tidak mau ribet rekrut karyawan tetap. FreshStart punya sistem shift yang simpel — tinggal konfirmasi kehadiran setiap hari. Sangat pas untuk usaha kecil seperti saya.",
+      pesan:
+        "Warung saya butuh koki harian tapi tidak mau ribet rekrut karyawan tetap. FreshStart punya sistem shift yang simpel — tinggal konfirmasi kehadiran setiap hari. Sangat pas untuk usaha kecil seperti saya.",
       inisial: "PB",
     },
     {
       nama: "Bu Hana Wijaya",
       usaha: "Kue Hana · Kuliner, Surabaya",
       bintang: 5,
-      pesan: "Saya kira susah cari orang yang mau bantu redesign website dengan harga yang masuk akal. Ternyata lewat FreshStart, dalam 3 hari sudah ada 5 lamaran masuk. Hasilnya pun melampaui ekspektasi saya.",
+      pesan:
+        "Saya kira susah cari orang yang mau bantu redesign website dengan harga yang masuk akal. Ternyata lewat FreshStart, dalam 3 hari sudah ada 5 lamaran masuk. Hasilnya pun melampaui ekspektasi saya.",
       inisial: "BH",
     },
     {
       nama: "Pak Andi",
       usaha: "Batik Sari Nusantara · Fashion, Solo",
       bintang: 5,
-      pesan: "Task Track-nya sangat membantu. Saya bisa lihat progress desainer saya kapan saja, bahkan saat sedang di toko. Tidak perlu WhatsApp bolak-balik lagi. Kerja jadi lebih tenang.",
+      pesan:
+        "Task Track-nya sangat membantu. Saya bisa lihat progress desainer saya kapan saja, bahkan saat sedang di toko. Tidak perlu WhatsApp bolak-balik lagi. Kerja jadi lebih tenang.",
       inisial: "PA",
     },
   ];
- 
+
   return (
     <section id="testimoni" className="py-14 bg-white">
       <div className="max-w-6xl mx-auto px-28">
@@ -342,10 +402,17 @@ function TestimoniSection() {
             >
               <div className="flex gap-0.5 mb-3">
                 {Array.from({ length: 5 }).map((_, j) => (
-                  <span key={j} className={`text-sm ${j < t.bintang ? "text-yellow-400" : "text-gray-300"}`}>★</span>
+                  <span
+                    key={j}
+                    className={`text-sm ${j < t.bintang ? "text-yellow-400" : "text-gray-300"}`}
+                  >
+                    ★
+                  </span>
                 ))}
               </div>
-              <p className="text-gray-700 text-sm leading-relaxed mb-5">"{t.pesan}"</p>
+              <p className="text-gray-700 text-sm leading-relaxed mb-5">
+                "{t.pesan}"
+              </p>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-slate-400 flex items-center justify-center text-white text-xs font-bold shrink-0">
                   {t.inisial}
@@ -371,12 +438,12 @@ function CTASection() {
         <div className="border border-gray-200 rounded-2xl px-10 py-10 flex items-center justify-between gap-8 overflow-hidden">
           <div className="max-w-sm">
             <h2 className="text-xl md:text-2xl font-bold text-blue-600 mb-3 leading-snug">
-              Yuk mulai berkolaborasi,{" "}
-              <br />
+              Yuk mulai berkolaborasi, <br />
               dan kembangkan usahamu!
             </h2>
             <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-              Kolaborasi antara UMKM & talenta muda untuk menciptakan pertumbuhan bagi bisnis dan Indonesia, dimulai hari ini
+              Kolaborasi antara UMKM & talenta muda untuk menciptakan
+              pertumbuhan bagi bisnis dan Indonesia, dimulai hari ini
             </p>
             <button
               onClick={() => navigate("/auth/register")}

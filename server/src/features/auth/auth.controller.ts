@@ -21,4 +21,15 @@ export const AuthController = {
       data: result,
     });
   },
+
+  getMe: async (req: Request, res: Response) => {
+    const userId = req.user.id;
+    const user = await AuthService.getMe(userId);
+
+    res.status(200).json({
+      success: true,
+      message: "Berhasil mendapatkan data user",
+      data: user,
+    });
+  },
 };

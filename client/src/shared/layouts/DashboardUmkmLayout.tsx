@@ -1,9 +1,11 @@
 import { cn } from "@/shared/lib/utils";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, Navigate, NavLink, useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import logo from "@/assets/images/logo.png";
 import { ModalNotification } from "@/shared/components/ui/modal-notification";
+import { useAppDispatch, useAppSelector } from "../stores/hook";
+import { authLogout } from "@/features/auth/authSlice";
 
 const navItems = [
   { title: "Home", to: "/umkm/home" },
@@ -193,6 +195,8 @@ function UbahAkunModal({ onClose }: { onClose: () => void }) {
 
 // ─── Profile Menu ─────────────────────────────────────────────────────────────
 function ProfileMenu() {
+  const dispatch = useAppDispatch();
+
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isAkunModalOpen, setIsAkunModalOpen] = React.useState(false);
   const [isKeluarModalOpen, setIsKeluarModalOpen] = React.useState(false);
@@ -201,10 +205,13 @@ function ProfileMenu() {
   const userStr = localStorage.getItem("user");
   const user = userStr ? JSON.parse(userStr) : null;
   const userEmail = user?.email || "";
-  const profileKey = userEmail ? `registered_umkm_profile_${userEmail}` : "registered_umkm_profile";
+  const profileKey = userEmail
+    ? `registered_umkm_profile_${userEmail}`
+    : "registered_umkm_profile";
   const savedProfileStr = localStorage.getItem(profileKey);
   const savedProfile = savedProfileStr ? JSON.parse(savedProfileStr) : null;
-  const logoUsaha = savedProfile?.businessLogo || "https://i.pravatar.cc/150?img=11";
+  const logoUsaha =
+    savedProfile?.businessLogo || "https://i.pravatar.cc/150?img=11";
 
   const handleClick = (path: string) => {
     setIsMenuOpen(false);
@@ -219,7 +226,10 @@ function ProfileMenu() {
 
   const handleKeluar = () => {
     setIsKeluarModalOpen(false);
-    navigate("/auth/login");
+
+    localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
+    dispatch(authLogout());
   };
 
   return (
@@ -294,15 +304,23 @@ export default function DashboardUmkmLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const authSelector = useAppSelector((state) => state.auth);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+
+  if (authSelector.role !== "UMKM") {
+    return <Navigate to="/" />;
+  }
 
   const userStr = localStorage.getItem("user");
   const user = userStr ? JSON.parse(userStr) : null;
   const userEmail = user?.email || "";
-  const profileKey = userEmail ? `registered_umkm_profile_${userEmail}` : "registered_umkm_profile";
+  const profileKey = userEmail
+    ? `registered_umkm_profile_${userEmail}`
+    : "registered_umkm_profile";
   const savedProfileStr = localStorage.getItem(profileKey);
   const savedProfile = savedProfileStr ? JSON.parse(savedProfileStr) : null;
-  const logoUsaha = savedProfile?.businessLogo || "https://i.pravatar.cc/150?img=11";
+  const logoUsaha =
+    savedProfile?.businessLogo || "https://i.pravatar.cc/150?img=11";
 
   return (
     <>

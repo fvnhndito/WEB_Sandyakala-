@@ -1,87 +1,90 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import AuthLayout from "@/shared/layouts/AuthLayout";
-import { apiRequest } from "@/shared/lib/api";
+import { loginSchema, type LoginInput } from "../auth.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { axiosInstance } from "@/shared/lib/axios";
+import { useAppDispatch } from "@/shared/stores/hook";
+import { authLogin } from "../authSlice";
 
 export default function LoginForm() {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const dispatch = useAppDispatch();
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
+  const [serverError, setServerError] = useState<string | null>(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+  });
 
-    if (!email || !password) {
-      setError("Email dan password wajib diisi");
-      return;
-    }
-
+  const onSubmit = async (data: LoginInput) => {
+    console.log("Login data:", data);
     setLoading(true);
+    setServerError(null);
+    try {
+      const response = await axiosInstance.post("/auth/login", {
+        email: data.email,
+        password: data.password,
+      });
 
-    const response = await apiRequest<{
-      accessToken: string;
-      user: { fullname: string; email: string; role: string };
-    }>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
+      if (response.data.success) {
+        const { accessToken, user } = response.data.data;
 
-    setLoading(false);
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("user", JSON.stringify(user));
 
-    if (response.success && response.data) {
-      localStorage.setItem("accessToken", response.data.accessToken);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      
-      const role = response.data.user.role;
-      const email = response.data.user.email;
-      
-      if (role === "ADMIN") {
-        navigate("/admin/dashboard");
-      } else if (role === "UMKM") {
-        navigate("/umkm/dashboard");
-      } else {
-        const savedStatus = localStorage.getItem("umkm_verification_status_" + email);
-        if (savedStatus === "approved") {
-          navigate("/umkm/home");
-        } else {
-          navigate("/umkm/verification");
-        }
+        dispatch(
+          authLogin({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+          }),
+        );
       }
-    } else {
-      setError(response.message || "Email atau password salah");
+    } catch (err) {
+      console.log("Login error:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <AuthLayout type="login">
-      {error && (
+      {serverError && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2.5 rounded-xl text-xs mb-4">
-          {error}
+          {serverError}
         </div>
       )}
-      
-      <form className="space-y-4" onSubmit={handleSubmit}>
+
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <Input
           type="email"
           placeholder="example@gmail.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
           disabled={loading}
-          required
+          {...register("email")}
         />
+        {errors.email && (
+          <p className="text-red-500 text-xs mt-1.5 ml-1">
+            {errors.email.message}
+          </p>
+        )}
+
         <Input
           type="password"
           placeholder="********"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
           disabled={loading}
-          required
+          {...register("password")}
         />
+        {errors.password && (
+          <p className="text-red-500 text-xs mt-1.5 ml-1">
+            {errors.password.message}
+          </p>
+        )}
 
         <Button
           className="w-full"

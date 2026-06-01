@@ -704,7 +704,7 @@ export default function VerificationUMKM() {
                     onChange={(e) => setKategori(e.target.value)}
                     className="border border-gray-200 rounded-lg px-4 py-2.5 text-[13px] bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   >
-                    <option value="" selected disabled>
+                    <option value="" disabled>
                       Pilih Kategori Usaha
                     </option>
                     <option value="Kuliner">Kuliner (Makanan & Minuman)</option>

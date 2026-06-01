@@ -30,6 +30,7 @@ const ApplicationRepository = {
     let baseQuery = `
       SELECT 
         a.id AS application_id,
+        j.id AS job_id,
         u.fullname AS applicant_name,
         j.title AS job_title,
         fp.last_education,

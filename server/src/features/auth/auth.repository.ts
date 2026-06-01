@@ -24,4 +24,13 @@ export const AuthRepository = {
 
     return result;
   },
+
+  findUserById: async (userId: number) => {
+    const [userRows]: any = await pool.execute(
+      "SELECT id, fullname, email, role FROM users WHERE id = ?",
+      [userId],
+    );
+
+    return userRows[0];
+  },
 };

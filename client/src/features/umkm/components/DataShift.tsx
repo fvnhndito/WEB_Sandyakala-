@@ -1,223 +1,170 @@
+import { useState, useEffect } from "react";
 import DataTaskLayout from "@/shared/layouts/DataTaskLayout";
-import { useState } from "react";
-// import { ModalShift } from "@/shared/components/ui/modal-shift";
-// import { DetailShiftContent } from "@/features/umkm/components/DetailShiftContent";
-// import type { Shift } from "@/features/umkm/types/dashboard.types";
-import { useTask } from "../../../pages/umkm/TaskContext";
+import { apiRequest } from "@/shared/lib/api";
 
+interface ShiftRow {
+  job_id: number;
+  job_title: string;
+  job_category: string;
+  shift_type: string;
+  worker_name: string;
+}
 
 export default function DataShift() {
-    const { shifts } = useTask();   
-
-  // const showDetailButtonShift = [
-  //   "Review",
-  //   "Disetujui",
-  //   "Proses",
-  // ];
-
-  // const getStatusBadgeShift = (
-  //   status_shift?: Shift["status_shift"],
-  // ) => {
-  //   if (!status_shift) return "";
-
-  //   const classesShift: Record<string, string> = {
-  //     disetujui: "bg-success-100 text-success-300",
-  //     proses: "bg-neutral-600/25 text-neutral-800",
-  //     review: "bg-warning-200/50 text-warning-300",
-  //   };
-
-  //   return classesShift[status_shift.toLowerCase()] ?? "";
-  // };
-
-  // const [open, setOpen] = useState(false);
-  // const [selectedShift, setSelectedShift] =
-  //   useState<Shift | null>(null);
-
+  const [shiftRows, setShiftRows] = useState<ShiftRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterShift, setFilterShift] = useState("");
 
-  const [filterStatus, setFilterStatus] = useState<string>("");
-  const filteredShifts = shifts.filter((e) => {
-  const matchStatus = filterStatus
-    ? e.status_shift.toLowerCase() === filterStatus
-    : true;
-  const matchSearch = searchQuery
-    ? e.nama_pekerja_shift.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.nama_shift.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.divisi_shift.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.jenis_shift.toLowerCase().includes(searchQuery.toLowerCase())
-    : true;
-  return matchStatus && matchSearch;
-});
+  const token = localStorage.getItem("accessToken");
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError("");
+
+    // 1. Ambil semua job milik UMKM + semua aplikasi sekaligus
+    const [listRes, appsRes] = await Promise.all([
+      apiRequest<any>("/jobs/umkm/me", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+      apiRequest<any>("/applications/umkm", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    ]);
+
+    if (!listRes.success || !listRes.data) {
+      setError(listRes.message || "Gagal mengambil data shift");
+      setLoading(false);
+      return;
+    }
+
+    // 2. Semua aplikasi yang ACCEPTED, digroup by job_id
+    const acceptedByJobId: Record<number, string[]> = {};
+    if (appsRes.success && appsRes.data) {
+      const apps = Array.isArray(appsRes.data)
+        ? appsRes.data
+        : (appsRes.data as any).applicants ?? [];
+
+      apps
+        .filter((a: any) => a.status === "ACCEPTED")
+        .forEach((a: any) => {
+          const jid = a.job_id;
+          if (!acceptedByJobId[jid]) acceptedByJobId[jid] = [];
+          if (a.applicant_name) acceptedByJobId[jid].push(a.applicant_name);
+        });
+    }
+
+    // 3. Filter hanya tipe SHIFT
+    const shiftJobs = (listRes.data as any[]).filter((j: any) => j.type === "SHIFT");
+
+    // 4. Fetch detail tiap job untuk mendapatkan shifts & job_category
+    const details = await Promise.all(
+      shiftJobs.map((job: any) =>
+        apiRequest<any>(`/jobs/${job.id}`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      )
+    );
+
+    // 5. Flatten shifts menjadi baris tabel
+    const rows: ShiftRow[] = [];
+    details.forEach((res) => {
+      if (!res.success || !res.data) return;
+      const job = res.data;
+      const workers = acceptedByJobId[job.id] ?? [];
+      const workerName = workers.length > 0 ? workers.join(", ") : "-";
+
+      (job.shifts ?? []).forEach((shiftType: string) => {
+        rows.push({
+          job_id: job.id,
+          job_title: job.title,
+          job_category: job.job_category ?? "-",
+          shift_type: shiftType,
+          worker_name: workerName,
+        });
+      });
+    });
+
+    setShiftRows(rows);
+    setLoading(false);
+  };
+
+  const filtered = shiftRows.filter((row) => {
+    const matchShift = filterShift
+      ? row.shift_type.toLowerCase() === filterShift.toLowerCase()
+      : true;
+    const matchSearch = searchQuery
+      ? row.job_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.shift_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.worker_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.job_category.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    return matchShift && matchSearch;
+  });
 
   return (
     <DataTaskLayout
       title="Data Tugas Pekerja"
       description="Kelola semua tugas pekerja dalam satu tampilan"
       activeTab="dataShift"
-      onStatusChange={(status) =>
-      setFilterStatus(status.toLowerCase())
-      }
-      onSearch={(query) => setSearchQuery(query)}
+      onStatusChange={setFilterShift}
+      onSearch={setSearchQuery}
       tabs={[
-        {
-          label: "Proyek Masuk",
-          path: "/umkm/dashboard/data-project",
-          key: "dataProject",
-        },
-        {
-          label: "Shift Harian",
-          path: "/umkm/dashboard/data-shift",
-          key: "dataShift",
-        },
+        { label: "Proyek Masuk", path: "/umkm/dashboard/data-project", key: "dataProject" },
+        { label: "Shift Harian", path: "/umkm/dashboard/data-shift", key: "dataShift" },
       ]}
-      statusOptions={[
-        "Disetujui",
-        "Proses",
-        "Review",
-      ]}
+      statusOptions={["PAGI", "SIANG", "MALAM"]}
     >
       <div className="w-full px-2 sm:px-6">
-        <div className="border border-neutral-200 rounded-lg overflow-x-auto">
-          <table className="min-w-fit w-full table-fixed border-collapse text-sm text-neutral-900">
-            <thead>
-              <tr className="bg-mint/15 text-center">
-                <th className="border px-1.5 sm:px-3 py-2 sm:text-xs w-10">No</th>
-                <th className="border px-1.5 sm:px-3 py-2 sm:text-xs w-30">
-                  Nama Pekerja
-                </th>
-                <th className="border px-1.5 sm:px-3 py-2 sm:text-xs w-22">
-                  Posisi Pekerja
-                </th>
-                <th className="border px-1.5 sm:px-3 py-2 sm:text-xs w-24">
-                  Tugas Shift
-                </th>
-                <th className="border px-1.5 sm:px-3 py-2 sm:text-xs w-22">
-                  Jam Shift
-                </th>
-                <th className="border px-1.5 sm:px-3 py-2 sm:text-xs w-22">
-                  Jenis Shift
-                </th>
-                {/* <th className="border px-1.5 sm:px-3 py-2 sm:text-xs w-18">
-                  Jam Masuk
-                </th>
-                <th className="border px-1.5 sm:px-3 py-2 sm:text-xs w-18">
-                  Jam Pulang
-                </th>
-                <th className="border px-1.5 sm:px-3 py-2 sm:text-xs w-18">
-                  Status
-                </th>
-                <th className="border px-1.5 sm:px-3 py-2 sm:text-xs w-18">
-                  Aksi
-                </th> */}
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredShifts.length > 0 ? (
-                filteredShifts.map((shift, index) => (
-                  <tr
-                    key={shift.id}
-                    className="hover:bg-neutral-100 transition text-center text-xs"
-                  >
-                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs">
-                      {index + 1}
-                    </td>
-
-                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs">
-                          {shift.nama_pekerja_shift}
-                    </td>
-                    
-                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs wrap-break-word">
-                      {shift.divisi_shift}
-                    </td>
-
-                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs wrap-break-word">
-                      {shift.nama_shift}
-                    </td>
-
-                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs whitespace-nowrap">
-                      {shift.waktu_mulai_shift} -
-                      {shift.waktu_selesai_shift}
-                    </td>
-
-                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs2 capitalize">
-                      {shift.jenis_shift}
-                    </td>
-
-                    {/* <td className="border px-1.5 sm:px-3 py-2 sm:text-xs whitespace-nowrap">
-                      {new Date(
-                        shift.tanggal_shift,
-                      ).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </td>
-
-                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs">
-                      {shift.jam_masuk}
-                    </td>
-
-                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs">
-                      {shift.jam_pulang}
-                    </td>
-
-                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs">
-                      <span
-                        className={`px-2 py-1 rounded-md text-xs font-semibold ${getStatusBadgeShift(
-                          shift.status_shift,
-                        )}`}
-                      >
-                        {shift.status_shift}
-                      </span>
-                    </td>
-
-                    <td className="border px-1.5 sm:px-3 py-2 sm:text-xs">
-                      {showDetailButtonShift.includes(
-                        shift.status_shift,
-                      ) && (
-                        <button
-                          onClick={() => {
-                            setSelectedShift(shift);
-                            setOpen(true);
-                          }}
-                          className="border border-primary-dark px-3 py-1 text-xs rounded-md hover:bg-primary-dark hover:text-white transition cursor-pointer"
-                        >
-                          Detail
-                        </button>
-                      )}
-                    </td> */}
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={10}
-                    className="text-center py-5 text-neutral-500"
-                  >
-                    Tidak ada data shift
-                  </td>
+        {loading ? (
+          <p className="text-center py-10 text-neutral-500">Memuat data...</p>
+        ) : error ? (
+          <p className="text-center py-10 text-red-500">{error}</p>
+        ) : (
+          <div className="border border-neutral-200 rounded-lg overflow-x-auto">
+            <table className="min-w-fit w-full table-auto border-collapse text-sm text-neutral-900">
+              <thead>
+                <tr className="bg-mint/15 text-center">
+                  <th className="border px-3 py-2 text-xs">No</th>
+                  <th className="border px-3 py-2 text-xs whitespace-nowrap">Nama Pekerja</th>
+                  <th className="border px-3 py-2 text-xs whitespace-nowrap">Kategori Pekerja</th>
+                  <th className="border px-3 py-2 text-xs whitespace-nowrap">Tugas Shift</th>
+                  <th className="border px-3 py-2 text-xs whitespace-nowrap">Tipe Shift</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* <ModalShift
-          open={open}
-          onClose={() => setOpen(false)}
-          title="Detail Shift"
-          subtitle={selectedShift?.nama_pekerja_shift}
-          subtitle2={selectedShift?.divisi_shift}
-          status={selectedShift?.status_shift}
-        >
-          {selectedShift && (
-            <DetailShiftContent
-              shift={selectedShift}
-              onClose={() => setOpen(false)}
-            />
-          )}
-        </ModalShift> */}
+              </thead>
+              <tbody>
+                {filtered.length > 0 ? (
+                  filtered.map((row, index) => (
+                    <tr
+                      key={`${row.job_id}-${row.shift_type}-${index}`}
+                      className="hover:bg-neutral-100 transition text-center text-xs"
+                    >
+                      <td className="border px-3 py-2">{index + 1}</td>
+                      <td className="border px-3 py-2">{row.worker_name}</td>
+                      <td className="border px-3 py-2">{row.job_category}</td>
+                      <td className="border px-3 py-2">{row.job_title}</td>
+                      <td className="border px-3 py-2 capitalize">{row.shift_type}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="text-center py-5 text-neutral-500">
+                      Tidak ada data shift
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </DataTaskLayout>
   );

@@ -28,7 +28,7 @@ const UmkmController = {
     });
   },
 
-  list: async (req: Request, res: Response) => {
+  list: async (_: Request, res: Response) => {
     const result = await UmkmService.getAllUmkm();
     res.status(200).json({
       success: true,

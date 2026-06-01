@@ -1,117 +1,146 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DataTaskLayout from "@/shared/layouts/DataTaskLayout";
 import { FiEdit2 } from "react-icons/fi";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { IoCheckmark, IoClose } from "react-icons/io5";
 import { GoArrowLeft } from "react-icons/go";
-import type { Lowongan } from "@/features/umkm/types/dashboard.types";
-import { getLowonganWithCount } from "@/features/umkm/utils/rekrutmen-join";
+import { apiRequest } from "@/shared/lib/api";
 
-type ModalStep =
-  | "edit"
-  | "batalEdit"
-  | "simpanBerhasil"
-  | "konfirmasiHapus"
-  | "batalHapus"
-  | "hapusBerhasil"
-  | null;
+interface Job {
+  id: number;
+  title: string;
+  type: string;
+  deadline: string;
+  created_at: string;
+  worker_needed: number;
+  salary_min?: number;
+  salary_max?: number;
+}
+
+type ModalStep = "edit" | "batalEdit" | "simpanBerhasil" | "konfirmasiHapus" | "batalHapus" | "hapusBerhasil" | null;
 
 const tabs = [
-  {
-    label: "Lamaran Masuk",
-    path: "/umkm/dashboard/lamaran-masuk",
-    key: "lamaranMasuk",
-  },
-  {
-    label: "Dalam Seleksi",
-    path: "/umkm/dashboard/dalam-seleksi",
-    key: "dalamSeleksi",
-  },
-  {
-    label: "Posisi Terbuka",
-    path: "/umkm/dashboard/posisi-terbuka",
-    key: "posisiTerbuka",
-  },
+  { label: "Lamaran Masuk", path: "/umkm/dashboard/lamaran-masuk", key: "lamaranMasuk" },
+  { label: "Dalam Seleksi", path: "/umkm/dashboard/dalam-seleksi", key: "dalamSeleksi" },
+  { label: "Posisi Terbuka", path: "/umkm/dashboard/posisi-terbuka", key: "posisiTerbuka" },
 ];
 
-const getStatusBadge = (status: Lowongan["status_lowongan"]) => {
-  return status === "Buka"
-    ? "bg-success-100 text-success"
-    : "bg-error-100 text-error";
-};
+const isJobOpen = (deadline: string) => new Date(deadline) >= new Date();
 
 export default function DataPosisiTerbuka() {
-  const [dataLowongan, setDataLowongan] = useState(getLowonganWithCount());
-
-  const [modalStep, setModalStep] = useState<ModalStep>(null);
-  const [selected, setSelected] = useState<Lowongan | null>(null);
-
-  const [namaPosisiLowongan, setNamaPosisiLowongan] = useState("");
-  const [tipeKerjaLowongan, setTipeKerjaLowongan] = useState("Berbasis Proyek");
-  const [tanggalBukaLowongan, setTanggalBukaLowongan] = useState("");
-  const [tanggalTutupLowongan, setTanggalTutupLowongan] = useState("");
-  const [statusLowongan, setStatusLowongan] = useState<"Buka" | "Tutup" | "Segera Tutup">(
-    "Buka",
-  );
-  const [selectedStatus, setSelectedStatus] = useState("");
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [modalStep, setModalStep] = useState<ModalStep>(null);
+  const [selected, setSelected] = useState<Job | null>(null);
 
-  const filteredLowongan = dataLowongan.filter((item) => {
-  const matchStatus = selectedStatus
-    ? item.status_lowongan.toLowerCase() === selectedStatus
-    : true;
-  const matchSearch = searchQuery
-    ? item.posisi_lowongan.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.tipe_lowongan.toLowerCase().includes(searchQuery.toLowerCase())
-    : true;
-  return matchStatus && matchSearch;
-});
+  // State edit
+  const [editTitle, setEditTitle] = useState("");
+  const [editDeadline, setEditDeadline] = useState("");
 
-  const openEdit = (item: Lowongan) => {
-    setSelected(item);
-    setNamaPosisiLowongan(item.posisi_lowongan);
-    setTipeKerjaLowongan(item.tipe_lowongan);
-    setStatusLowongan(item.status_lowongan);
-    setTanggalBukaLowongan(item.tanggal_buka_lowongan);
-    setTanggalTutupLowongan(item.tanggal_tutup_lowongan);
+  const token = localStorage.getItem("accessToken");
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const fetchJobs = async () => {
+    setLoading(true);
+    setError("");
+    const res = await apiRequest<any>("/jobs/umkm/me", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (res.success && res.data) {
+      setJobs((res.data as any) ?? []);
+    } else {
+      setError(res.message || "Gagal mengambil data lowongan");
+    }
+    setLoading(false);
+  };
+
+  const filteredJobs = jobs.filter((job) => {
+    const status = isJobOpen(job.deadline) ? "buka" : "tutup";
+    const matchStatus = selectedStatus ? status === selectedStatus.toLowerCase() : true;
+    const matchSearch = searchQuery
+      ? job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        job.type.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    return matchStatus && matchSearch;
+  });
+
+  const openEdit = (job: Job) => {
+    setSelected(job);
+    setEditTitle(job.title);
+    setEditDeadline(job.deadline?.slice(0, 10) ?? "");
     setModalStep("edit");
   };
 
-  const openHapus = (item: Lowongan) => {
-    setSelected(item);
+  const openHapus = (job: Job) => {
+    setSelected(job);
     setModalStep("konfirmasiHapus");
   };
 
-  const closeModal = () => {
-    setModalStep(null);
-    setSelected(null);
+  const closeModal = () => { setModalStep(null); setSelected(null); };
+
+  // PUT /api/jobs/:id — hanya update title & deadline
+  // Field lain dikirim ulang dengan nilai aslinya agar validasi schema terpenuhi
+  const handleSimpan = async () => {
+    if (!selected) return;
+
+    // Ambil detail job dulu agar punya semua field yang diperlukan schema
+    const detailRes = await apiRequest<any>(`/jobs/${selected.id}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!detailRes.success || !detailRes.data) return;
+
+    const job = detailRes.data;
+    const body: any = {
+      title: editTitle,
+      job_category: job.job_category,
+      description: job.description,
+      type: job.type,
+      salary_min: job.salary_min ?? undefined,
+      salary_max: job.salary_max ?? undefined,
+      worker_needed: job.worker_needed,
+      minimum_education: job.minimum_education,
+      qualification_description: job.qualification_description,
+      portfolio_requirement: job.portfolio_requirement,
+      deadline: editDeadline,
+      skills: (job.skills ?? []).map((s: any) => s.skill_name ?? s),
+    };
+
+    if (job.type === "SHIFT" && job.shifts) body.shifts = job.shifts;
+    if (job.type === "PROJECT" && job.project_tasks) body.project_tasks = job.project_tasks;
+
+    const res = await apiRequest(`/jobs/${selected.id}`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+
+    if (res.success) {
+      await fetchJobs();
+      setModalStep("simpanBerhasil");
+    }
   };
 
-  // edit
-  const handleSimpan = () => {
+  // DELETE /api/jobs/:id
+  const handleHapus = async () => {
     if (!selected) return;
-    setDataLowongan((prev) =>
-      prev.map((l) =>
-        l.id === selected.id
-          ? {
-              ...l,
-              posisi_lowongan: namaPosisiLowongan,
-              tipe_lowongan: tipeKerjaLowongan,
-              tanggal_buka_lowongan: tanggalBukaLowongan,
-              tanggal_tutup_lowongan: tanggalTutupLowongan,
-              status_lowongan: statusLowongan,
-            }
-          : l,
-      ),
-    );
-    setModalStep("simpanBerhasil");
-  };
-
-  // delete
-  const handleHapus = () => {
-    if (!selected) return;
-    setDataLowongan((prev) => prev.filter((l) => l.id !== selected.id));
-    setModalStep("hapusBerhasil");
+    const res = await apiRequest(`/jobs/${selected.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.success) {
+      await fetchJobs();
+      setModalStep("hapusBerhasil");
+    }
   };
 
   return (
@@ -120,338 +149,155 @@ export default function DataPosisiTerbuka() {
       description="Kelola semua lowongan dalam satu tampilan"
       activeTab="posisiTerbuka"
       tabs={tabs}
-      statusOptions={["Buka", "Tutup", "Segera Tutup"]}
-      onStatusChange={(status) => setSelectedStatus(status)}
-      onSearch={(query) => setSearchQuery(query)}
+      statusOptions={["Buka", "Tutup"]}
+      onStatusChange={setSelectedStatus}
+      onSearch={setSearchQuery}
     >
       <div className="w-full px-2 sm:px-6">
-        <div className=" border border-neutral-200 rounded-lg overflow-hidden overflow-x-auto">
-          <table className="w-full min-w-fit table-auto border-collapse text-sm text-neutral-900">
-            <thead>
-              <tr className="bg-mint/15 text-center">
-                <th className="border px-3 py-2">No</th>
-                <th className="border px-3 py-2">Posisi</th>
-                <th className="border px-3 py-2 whitespace-nowrap">
-                  Tipe Kerja
-                </th>
-                <th className="border px-3 py-2 whitespace-nowrap">
-                  Tanggal Buka Lowongan
-                </th>
-                <th className="border px-3 py-2">Pelamar</th>
-                <th className="border px-3 py-2">Status</th>
-                <th className="border px-3 py-2">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLowongan.length > 0 ? (
-                filteredLowongan.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-neutral-100 transition text-center text-xs"
-                  >
-                    <td className="border px-3 py-2">{index + 1}</td>
-                    <td className="border px-3 py-2 font-semibold">
-                      {item.posisi_lowongan}
-                    </td>
-                    <td className="border px-3 py-2">{item.tipe_lowongan}</td>
-                    <td className="border px-3 py-2 whitespace-nowrap">
-                      {new Date(item.tanggal_buka_lowongan).toLocaleDateString(
-                        "id-ID",
-                        {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        },
-                      )}{" "}
-                      -{" "}
-                      {new Date(item.tanggal_tutup_lowongan).toLocaleDateString(
-                        "id-ID",
-                        {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        },
-                      )}
-                    </td>
-                    <td className="border px-3 py-2">
-                      {item.jumlah_pelamar ?? 0} Pelamar
-                    </td>
-                    <td className="border px-3 py-2">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadge(item.status_lowongan)}`}
-                      >
-                        {item.status_lowongan}
-                      </span>
-                    </td>
-                    <td className="border px-3 py-2">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => openEdit(item)}
-                          className="text-yellow-500 hover:text-yellow-600 transition"
-                        >
-                          <FiEdit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => openHapus(item)}
-                          className="text-red-500 hover:text-red-600 transition"
-                        >
-                          <RiDeleteBin6Line className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={7} className="text-center py-5 text-neutral-500">
-                    Tidak ada data lowongan
-                  </td>
+        {loading ? (
+          <p className="text-center py-10 text-neutral-500">Memuat data...</p>
+        ) : error ? (
+          <p className="text-center py-10 text-red-500">{error}</p>
+        ) : (
+          <div className="border border-neutral-200 rounded-lg overflow-x-auto">
+            <table className="w-full min-w-fit table-auto border-collapse text-sm text-neutral-900">
+              <thead>
+                <tr className="bg-mint/15 text-center">
+                  <th className="border px-3 py-2 text-xs">No</th>
+                  <th className="border px-3 py-2 text-xs">Posisi</th>
+                  <th className="border px-3 py-2 text-xs whitespace-nowrap">Tipe Kerja</th>
+                  <th className="border px-3 py-2 text-xs whitespace-nowrap">Deadline</th>
+                  <th className="border px-3 py-2 text-xs">Kuota</th>
+                  <th className="border px-3 py-2 text-xs">Status</th>
+                  <th className="border px-3 py-2 text-xs">Aksi</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredJobs.length > 0 ? (
+                  filteredJobs.map((job, index) => (
+                    <tr key={job.id} className="hover:bg-neutral-100 transition text-center text-xs">
+                      <td className="border px-3 py-2">{index + 1}</td>
+                      <td className="border px-3 py-2 font-semibold">{job.title}</td>
+                      <td className="border px-3 py-2">{job.type === "PROJECT" ? "Berbasis Proyek" : "Shift Harian"}</td>
+                      <td className="border px-3 py-2 whitespace-nowrap">
+                        {new Date(job.deadline).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                      </td>
+                      <td className="border px-3 py-2">{job.worker_needed} orang</td>
+                      <td className="border px-3 py-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${isJobOpen(job.deadline) ? "bg-success-100 text-success" : "bg-error-100 text-error"}`}>
+                          {isJobOpen(job.deadline) ? "Buka" : "Tutup"}
+                        </span>
+                      </td>
+                      <td className="border px-3 py-2">
+                        <div className="flex items-center justify-center gap-2">
+                          <button onClick={() => openEdit(job)} className="text-yellow-500 hover:text-yellow-600">
+                            <FiEdit2 className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => openHapus(job)} className="text-red-500 hover:text-red-600">
+                            <RiDeleteBin6Line className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="text-center py-5 text-neutral-500">Tidak ada data lowongan</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
+      {/* ── MODALS ───────────────────────────────────────────────────────────── */}
       {modalStep && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          {/* Modal: Edit Lowongan */}
+
           {modalStep === "edit" && selected && (
             <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
-              <div className="px-6 pt-6 pb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setModalStep("batalEdit")}
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    <GoArrowLeft className="text-xl" />
-                  </button>
-                  <div>
-                    <h2 className="font-extrabold text-lg">Edit Lowongan</h2>
-                    <p className="text-gray-400 text-sm">
-                      Perbarui informasi posisi yang tersedia
-                    </p>
-                  </div>
+              <div className="px-6 pt-6 pb-4 flex items-center gap-3">
+                <button onClick={() => setModalStep("batalEdit")} className="text-gray-600 hover:text-gray-900">
+                  <GoArrowLeft className="text-xl" />
+                </button>
+                <div>
+                  <h2 className="font-extrabold text-lg">Edit Lowongan</h2>
+                  <p className="text-gray-400 text-sm">Perbarui informasi posisi yang tersedia</p>
                 </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(statusLowongan)}`}
-                >
-                  {statusLowongan}
-                </span>
               </div>
               <hr />
               <div className="px-6 py-5 space-y-4">
                 <div>
-                  <label className="text-sm text-gray-700 mb-1 block">
-                    Nama Posisi
-                  </label>
-                  <input
-                    type="text"
-                    value={namaPosisiLowongan}
-                    onChange={(e) => setNamaPosisiLowongan(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
-                  />
+                  <label className="text-sm text-gray-700 mb-1 block">Judul Lowongan</label>
+                  <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300" />
                 </div>
                 <div>
-                  <label className="text-sm text-gray-700 mb-1 block">
-                    Tipe Kerja
-                  </label>
-                  <select
-                    value={tipeKerjaLowongan}
-                    onChange={(e) => setTipeKerjaLowongan(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
-                  >
-                    <option>Berbasis Proyek</option>
-                    <option>Berbasis Shift</option>
-                  </select>
-                </div>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label className="text-sm text-gray-700 mb-1 block">
-                      Tanggal Buka
-                    </label>
-                    <input
-                      type="date"
-                      value={tanggalBukaLowongan}
-                      onChange={(e) => setTanggalBukaLowongan(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label className="text-sm text-gray-700 mb-1 block">
-                      Tanggal Tutup
-                    </label>
-                    <input
-                      type="date"
-                      value={tanggalTutupLowongan}
-                      onChange={(e) => setTanggalTutupLowongan(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-700 mb-1 block">
-                    Jumlah Pelamar
-                  </label>
-                  <input
-                    type="number"
-                    value={selected.jumlah_pelamar ?? 0}
-                    readOnly
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-gray-50 text-gray-500"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">
-                    Otomatis dihitung dari data pelamar masuk
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-700 mb-2 block">
-                    Status Lowongan
-                  </label>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => setStatusLowongan("Tutup")}
-                      className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold transition ${
-                        statusLowongan === "Tutup"
-                          ? "bg-error-100 border-error-300 text-error-300"
-                          : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                      }`}
-                    >
-                      Tutup Lowongan
-                    </button>
-                    <button
-                      onClick={() => setStatusLowongan("Buka")}
-                      className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold transition ${
-                        statusLowongan === "Buka"
-                          ? "bg-success-100 border-success-300 text-success-300"
-                          : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                      }`}
-                    >
-                      Buka Lowongan
-                    </button>
-                  </div>
+                  <label className="text-sm text-gray-700 mb-1 block">Deadline</label>
+                  <input type="date" value={editDeadline} onChange={(e) => setEditDeadline(e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-300" />
                 </div>
               </div>
               <hr />
               <div className="px-6 py-4 flex gap-3">
-                <button
-                  onClick={() => setModalStep("batalEdit")}
-                  className="flex-1 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={handleSimpan}
-                  className="flex-1 py-3 rounded-xl bg-slate-700 text-white font-bold text-sm hover:bg-slate-800 transition"
-                >
-                  Simpan Perubahan
-                </button>
+                <button onClick={() => setModalStep("batalEdit")} className="flex-1 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-50">Batal</button>
+                <button onClick={handleSimpan} className="flex-1 py-3 rounded-xl bg-slate-700 text-white font-bold text-sm hover:bg-slate-800">Simpan Perubahan</button>
               </div>
             </div>
           )}
 
-          {/* Modal: Batal Edit */}
           {modalStep === "batalEdit" && (
             <div className="bg-white rounded-2xl w-full max-w-md shadow-xl px-8 py-10 text-center">
-              <h2 className="font-extrabold text-xl mb-3">
-                Perubahan Anda tidak tersimpan
-              </h2>
-              <p className="text-gray-400 text-sm mb-8">
-                Silakan lakukan simpan ulang jika ingin menyimpan
-              </p>
-              <button
-                onClick={closeModal}
-                className="w-full py-3 rounded-xl bg-slate-700 text-white font-bold text-sm hover:bg-slate-800 transition"
-              >
-                Lihat Lowongan Lainnya
-              </button>
+              <h2 className="font-extrabold text-xl mb-3">Perubahan tidak tersimpan</h2>
+              <p className="text-gray-400 text-sm mb-8">Lakukan simpan ulang jika ingin menyimpan perubahan</p>
+              <button onClick={closeModal} className="w-full py-3 rounded-xl bg-slate-700 text-white font-bold text-sm hover:bg-slate-800">Tutup</button>
             </div>
           )}
 
-          {/* Modal: Simpan Berhasil */}
           {modalStep === "simpanBerhasil" && (
             <div className="bg-white rounded-2xl w-full max-w-md shadow-xl px-8 py-10 text-center">
-              <h2 className="font-extrabold text-xl mb-3">
-                Update lowongan berhasil dilakukan
-              </h2>
-              <p className="text-gray-400 text-sm mb-8">
-                Silakan lanjutkan melihat lowongan lainnya.
-              </p>
-              <button
-                onClick={closeModal}
-                className="w-full py-3 rounded-xl bg-slate-700 text-white font-bold text-sm hover:bg-slate-800 transition"
-              >
-                Lihat Lowongan Lainnya
-              </button>
+              <div className="w-14 h-14 rounded-full bg-teal-500 flex items-center justify-center mx-auto mb-4">
+                <IoCheckmark className="text-2xl text-white" />
+              </div>
+              <h2 className="font-extrabold text-xl mb-3">Lowongan berhasil diperbarui</h2>
+              <button onClick={closeModal} className="w-full py-3 rounded-xl bg-slate-700 text-white font-bold text-sm hover:bg-slate-800">Lihat Lowongan</button>
             </div>
           )}
 
-          {/* Modal: Konfirmasi Hapus */}
           {modalStep === "konfirmasiHapus" && selected && (
             <div className="bg-white rounded-2xl w-full max-w-md shadow-xl px-8 py-10 text-center">
-              <h2 className="font-extrabold text-xl mb-3">
-                Yakin ingin menghapus lowongan?
-              </h2>
-              <p className="text-gray-400 text-sm mb-8">
-                Lowongan ini akan dihapus permanen dan tidak bisa dipulihkan
-              </p>
+              <h2 className="font-extrabold text-xl mb-3">Yakin ingin menghapus lowongan?</h2>
+              <p className="text-gray-400 text-sm mb-8">Lowongan akan dihapus permanen dan tidak bisa dipulihkan</p>
               <div className="flex gap-3">
-                <button
-                  onClick={() => setModalStep("batalHapus")}
-                  className="flex-1 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition"
-                >
-                  Tidak
-                </button>
-                <button
-                  onClick={handleHapus}
-                  className="flex-1 py-3 rounded-xl bg-slate-700 text-white font-bold text-sm hover:bg-slate-800 transition"
-                >
-                  Ya
-                </button>
+                <button onClick={() => setModalStep("batalHapus")} className="flex-1 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-50">Tidak</button>
+                <button onClick={handleHapus} className="flex-1 py-3 rounded-xl bg-slate-700 text-white font-bold text-sm hover:bg-slate-800">Ya, Hapus</button>
               </div>
             </div>
           )}
 
-          {/* Modal: Batal Hapus */}
           {modalStep === "batalHapus" && (
             <div className="bg-white rounded-2xl w-full max-w-md shadow-xl px-8 py-10 text-center">
               <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
                 <IoClose className="text-2xl text-gray-500" />
               </div>
-              <h2 className="font-extrabold text-xl mb-3">
-                Lowongan tidak dihapus
-              </h2>
-              <p className="text-gray-400 text-sm mb-8">
-                Lowongan tetap tersedia dan dapat dikelola kembali.
-              </p>
-              <button
-                onClick={closeModal}
-                className="w-full py-3 rounded-xl bg-slate-700 text-white font-bold text-sm hover:bg-slate-800 transition"
-              >
-                Lihat Lowongan Lainnya
-              </button>
+              <h2 className="font-extrabold text-xl mb-3">Lowongan tidak dihapus</h2>
+              <p className="text-gray-400 text-sm mb-8">Lowongan tetap tersedia dan dapat dikelola kembali</p>
+              <button onClick={closeModal} className="w-full py-3 rounded-xl bg-slate-700 text-white font-bold text-sm hover:bg-slate-800">Kembali</button>
             </div>
           )}
 
-          {/* Modal: Hapus Berhasil */}
           {modalStep === "hapusBerhasil" && (
             <div className="bg-white rounded-2xl w-full max-w-md shadow-xl px-8 py-10 text-center">
               <div className="w-14 h-14 rounded-full bg-teal-500 flex items-center justify-center mx-auto mb-4">
                 <IoCheckmark className="text-2xl text-white" />
               </div>
-              <h2 className="font-extrabold text-xl mb-3">
-                Lowongan berhasil dihapus
-              </h2>
-              <p className="text-gray-400 text-sm mb-8">
-                Lowongan telah dihapus secara permanen dari sistem.
-              </p>
-              <button
-                onClick={closeModal}
-                className="w-full py-3 rounded-xl bg-slate-700 text-white font-bold text-sm hover:bg-slate-800 transition"
-              >
-                Lihat Lowongan Lainnya
-              </button>
+              <h2 className="font-extrabold text-xl mb-3">Lowongan berhasil dihapus</h2>
+              <p className="text-gray-400 text-sm mb-8">Lowongan telah dihapus secara permanen</p>
+              <button onClick={closeModal} className="w-full py-3 rounded-xl bg-slate-700 text-white font-bold text-sm hover:bg-slate-800">Lihat Lowongan</button>
             </div>
           )}
+
         </div>
       )}
     </DataTaskLayout>

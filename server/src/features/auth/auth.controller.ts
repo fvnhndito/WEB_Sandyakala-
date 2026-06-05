@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { AuthService } from "./auth.service.js";
+import { BadRequestError } from "../../common/utils/AppError.js";
 
 export const AuthController = {
   register: async (req: Request, res: Response) => {

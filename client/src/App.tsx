@@ -32,8 +32,15 @@ import ReportUMKM from "./pages/umkm/ReportUMKM";
 import AddLowonganPage from "./pages/umkm/AddLowonganPage";
 import VerificationUMKM from "./pages/umkm/VerificationUMKM";
 import ChatPage from "./pages/ChatPage";
+import { useHydration } from "./shared/hooks/useHydration";
 
 function App() {
+  const { isHydrated } = useHydration();
+
+  if (!isHydrated) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />

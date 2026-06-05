@@ -1,8 +1,5 @@
 import { z } from "zod";
 
-// FIX: Hapus wrapper 'body' karena middleware validate() langsung parse req.body,
-// bukan req. Sebelumnya schema { body: z.object({...}) } menyebabkan
-// "expected object, received undefined" karena req.body !== req.body.body
 export const submitTaskSchema = z.object({
   submission_link: z
     .string()

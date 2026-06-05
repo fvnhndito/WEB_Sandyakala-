@@ -14,7 +14,6 @@ router.use("/umkm", safeGuard(["USER", "UMKM", "ADMIN"]), umkmRouter);
 router.use("/skills", safeGuard(["UMKM"]), skillRouter);
 router.use("/jobs", jobRouter); // safeGuard diterapkan di dalam job.route.ts
 router.use("/applications", applicationRouter); // safeGuard diterapkan di dalam application.route.ts
-router.use("/tasks", taskRoutes);
+router.use("/tasks", taskRoutes)
 
 export default router;
-

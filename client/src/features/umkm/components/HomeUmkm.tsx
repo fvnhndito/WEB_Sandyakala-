@@ -3,24 +3,14 @@ import ImgHero from "@/assets/images/Bg Image Home UMKM.png";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import type { IconType } from "react-icons";
 import { Button } from "@/shared/components/ui/button";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiUser } from "react-icons/fi";
 import DashboardUmkmLayout from "@/shared/layouts/DashboardUmkmLayout";
 import { dataCardBisnis } from "../constants/mock-data";
 import { DetailPekerjaContent } from "./DetailPekerjaContent";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ModalPekerja } from "@/shared/components/ui/modal-pekerja";
 import type { Employee } from "@/features/umkm/types/dashboard.types";
-
-const employees: Employee[] = Array.from({ length: 5 }, (_, i) => ({
-  id: String(i + 1),
-  nama_pekerja: "Budi Santoso",
-  posisi_pekerja: "UI/UX Designer",
-  jenis_penugasan_pekerja: "Berbasis Proyek",
-  no_hp_pekerja: "081234567890",
-  tanggal_masuk_pekerja: "2024-01-10",
-  status_pekerja: "Aktif",
-  foto_pekerja: `https://i.pravatar.cc/150?img=${i + 1}`,
-}));
+import { apiRequest } from "@/shared/lib/api";
 
 interface CardBisnisProps {
   title: string;
@@ -40,7 +30,7 @@ const CardBisnis = ({ title, description, Icon, link }: CardBisnisProps) => {
         <p className="text-sm text-slate-600">{description}</p>
       </div>
       <Link to={link} className="w-full flex justify-end">
-        <IoIosArrowRoundForward className="h-10 w-10  fill-mint" />
+        <IoIosArrowRoundForward className="h-10 w-10 fill-mint" />
       </Link>
     </div>
   );
@@ -64,12 +54,63 @@ const Header = ({
 };
 
 export default function HomeUmkm() {
+  const token = localStorage.getItem("accessToken");
+
   const [open, setOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
     null,
   );
+  const [employeeList, setEmployeeList] = useState<Employee[]>([]);
+  const [loadingWorkers, setLoadingWorkers] = useState(true);
 
-  const [employeeList, setEmployeeList] = useState<Employee[]>(employees);
+  useEffect(() => {
+    if (token) {
+      fetchWorkers();
+    } else {
+      setLoadingWorkers(false);
+    }
+  }, [token]);
+
+  const fetchWorkers = async () => {
+    try {
+      setLoadingWorkers(true);
+
+      if (!token) return;
+
+      const res = await apiRequest<any>("/applications/umkm/workers", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.success || !res.data) {
+        setEmployeeList([]);
+        return;
+      }
+
+      const workers = Array.isArray(res.data) ? res.data : [];
+
+      const mapped: Employee[] = workers.map((w: any) => ({
+        id: String(w.application_id),
+        nama_pekerja: w.nama_pekerja,
+        posisi_pekerja: w.posisi_pekerja,
+        jenis_penugasan_pekerja:
+          w.jenis_penugasan === "PROJECT" ? "Berbasis Proyek" : "Shift Harian",
+        no_hp_pekerja: w.no_hp,
+        tanggal_masuk_pekerja: w.tanggal_masuk,
+        status_pekerja: w.status_pekerja ?? "Aktif",
+        foto_pekerja: w.profile_pic ?? "",
+      }));
+
+      setEmployeeList(mapped);
+    } catch (error) {
+      console.error("Gagal memuat data pekerja:", error);
+      setEmployeeList([]);
+    } finally {
+      setLoadingWorkers(false);
+    }
+  };
 
   const handleUpdateStatus = (id: string, status: "Aktif" | "Nonaktif") => {
     setEmployeeList((prev) =>
@@ -77,10 +118,15 @@ export default function HomeUmkm() {
         emp.id === id ? { ...emp, status_pekerja: status } : emp,
       ),
     );
+
     setSelectedEmployee((prev) =>
       prev?.id === id ? { ...prev, status_pekerja: status } : prev,
     );
   };
+
+  const activeWorkers = employeeList
+    .filter((worker) => worker.status_pekerja === "Aktif")
+    .slice(0, 5);
 
   return (
     <DashboardUmkmLayout>
@@ -112,7 +158,6 @@ export default function HomeUmkm() {
 
       <section className="container py-10">
         <Header title="Akses Cepat" description="Kelola Bisnis Anda" />
-
         <div className="my-7 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {dataCardBisnis.map((item) => (
             <CardBisnis
@@ -138,60 +183,78 @@ export default function HomeUmkm() {
         </div>
 
         <div className="grid my-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-          {/* Kasih kondisi, looping jika data tersedia */}
-          {employeeList.map((Employee) => (
-            <div
-              key={Employee.id}
-              className="p-4 shadow-md flex flex-col rounded-xl bg-white"
-            >
-              <div className="flex gap-3 items-center">
-                <div className="h-12 w-12 rounded-full overflow-hidden">
-                  <img
-                    src={
-                      Employee.foto_pekerja ?? "https://i.pravatar.cc/150?img=1"
-                    }
-                    alt="Profile Pekerja"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="space-y-0.3">
-                  <h4 className="font-bold text-lg">{Employee.nama_pekerja}</h4>
-                  <p className="text-gray-400">{Employee.posisi_pekerja}</p>
-                </div>
-              </div>
-              <Button
-                className="bg-mint-100 text-info-300 hover:text-white w-max font-medium mt-5 px-6 py-1"
-                size={"sm"}
-              >
-                {Employee.jenis_penugasan_pekerja}
-              </Button>
-
-              <div className="flex justify-between items-center mb-5 mt-9">
-                <p className="text-xs text-gray-400">
-                  Bergabung{" "}
-                  {new Date(Employee.tanggal_masuk_pekerja).toLocaleDateString(
-                    "id-ID",
-                    {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    },
-                  )}
-                </p>
-                <button
-                  onClick={() => {
-                    setSelectedEmployee(Employee);
-                    setOpen(true);
-                  }}
-                  className="p-2 border border-mint text-mint font-semibold text-xs rounded-md hover:bg-mint-200 transition-all cursor-pointer duration-100 hover:text-mint-300"
+          {loadingWorkers ? (
+            <p className="text-gray-400 text-sm col-span-3 text-center py-6">
+              Memuat data pekerja...
+            </p>
+          ) : activeWorkers.length > 0 ? (
+            <>
+              {activeWorkers.map((employee) => (
+                <div
+                  key={employee.id}
+                  className="p-4 shadow-md flex flex-col rounded-xl bg-white"
                 >
-                  Profil Pekerja
-                </button>
-              </div>
-            </div>
-          ))}
+                  <div className="flex gap-3 items-center">
+                    <div className="h-12 w-12 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center shrink-0">
+                      {employee.foto_pekerja ? (
+                        <img
+                          src={employee.foto_pekerja}
+                          alt="Profile Pekerja"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <FiUser className="text-2xl text-blue-400" />
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-lg">
+                        {employee.nama_pekerja}
+                      </h4>
+                      <p className="text-gray-400">{employee.posisi_pekerja}</p>
+                    </div>
+                  </div>
+                  <Button
+                    className="bg-mint-100 text-info-300 hover:text-white w-max font-medium mt-5 px-6 py-1"
+                    size="sm"
+                  >
+                    {employee.jenis_penugasan_pekerja}
+                  </Button>
+                  <div className="flex justify-between items-center mb-5 mt-9">
+                    <p className="text-xs text-gray-400">
+                      Bergabung{" "}
+                      {employee.tanggal_masuk_pekerja
+                        ? new Date(
+                            employee.tanggal_masuk_pekerja,
+                          ).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })
+                        : "-"}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedEmployee(employee);
+                        setOpen(true);
+                      }}
+                      className="p-2 border border-mint text-mint font-semibold text-xs rounded-md hover:bg-mint-200 hover:text-mint-300 transition-all duration-100 cursor-pointer"
+                    >
+                      Profil Pekerja
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            // Kalau belum ada pekerja, tampilkan hanya card tambah pekerja
+            <p className="text-gray-400 text-sm col-span-3 text-center py-6">
+              Belum ada pekerja aktif. Terima pelamar dari tab wawancara.
+            </p>
+          )}
+
           <Link
-            to={"/umkm/dashboard/lamaran-masuk"}
+            to="/umkm/dashboard/lamaran-masuk"
             className="border border-gray-300 rounded-xl flex flex-col items-center justify-center p-4 gap-7"
           >
             <div className="h-18 w-18 rounded-full bg-mint-100 flex justify-center items-center">
@@ -206,7 +269,6 @@ export default function HomeUmkm() {
           </Link>
         </div>
 
-        {/* modal detail pekerja */}
         <ModalPekerja
           open={open}
           onClose={() => setOpen(false)}

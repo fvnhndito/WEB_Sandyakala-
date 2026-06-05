@@ -86,12 +86,9 @@ export default function DataPosisiTerbuka() {
 
   const closeModal = () => { setModalStep(null); setSelected(null); };
 
-  // PUT /api/jobs/:id — hanya update title & deadline
-  // Field lain dikirim ulang dengan nilai aslinya agar validasi schema terpenuhi
   const handleSimpan = async () => {
     if (!selected) return;
 
-    // Ambil detail job dulu agar punya semua field yang diperlukan schema
     const detailRes = await apiRequest<any>(`/jobs/${selected.id}`, {
       method: "GET",
       headers: { Authorization: `Bearer ${token}` },
@@ -130,7 +127,6 @@ export default function DataPosisiTerbuka() {
     }
   };
 
-  // DELETE /api/jobs/:id
   const handleHapus = async () => {
     if (!selected) return;
     const res = await apiRequest(`/jobs/${selected.id}`, {

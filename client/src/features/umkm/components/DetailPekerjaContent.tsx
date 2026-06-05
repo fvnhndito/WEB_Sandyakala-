@@ -68,7 +68,6 @@ export function DetailPekerjaContent({ employee, onClose, onUpdateStatusPekerja}
           </p>
         </div>
       </div>
-      {/* button */}
       <div className="flex flex-row justify-evenly gap-7 border-t pt-5">
         <button
           onClick={() => setModalConfig({ visible: true, type: "nonaktifkan" })}

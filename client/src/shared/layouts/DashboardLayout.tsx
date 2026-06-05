@@ -1,27 +1,25 @@
 import React, { useState } from "react";
 import { BiNotepad, BiSolidGridAlt, BiSolidUser, BiMenu } from "react-icons/bi";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import { NavLink, useNavigate } from "react-router";
+import { Navigate, NavLink, useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { IoIosArrowRoundBack } from "react-icons/io";
-import LogoFreshstart from "@/assets/images/Logo FreshStart.png";
+import LogoFreshstart from "@/assets/images/logo.png";
 import Dropdown from "../components/dropdown";
+import { useAppDispatch, useAppSelector } from "../stores/hook";
+import { authLogout } from "@/features/auth/authSlice";
+import { ModalNotification } from "../components/ui/modal-notification";
 
 const menus = [
   { name: "Dashboard", icon: BiSolidGridAlt, to: "/admin/dashboard" },
-
   {
     name: "Verifikasi",
     icon: BiSolidUser,
     subItems: [
       { name: "Akun UMKM", to: "/admin/verifikasi-umkm/" },
-      {
-        name: "Akun Lulusan Baru",
-        to: "/admin/verifikasi-freshgraduate/",
-      },
+      { name: "Akun Lulusan Baru", to: "/admin/verifikasi-freshgraduate/" },
     ],
   },
-
   { name: "Laporan", icon: BiNotepad, to: "/admin/laporan" },
 ];
 
@@ -62,8 +60,26 @@ export default function DashboardLayout({
   description,
   showBackButton = false,
 }: DashboardLayoutProps) {
+  const authSelector = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isKeluarModalOpen, setIsKeluarModalOpen] = useState(false); // ✅ React.useState → useState (konsisten)
+
+  if (authSelector.role !== "ADMIN") {
+    return <Navigate to="/" />;
+  }
+
+  const handleKeluar = () => {
+    setIsMenuOpen(false);
+    setIsKeluarModalOpen(false);
+    localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
+    dispatch(authLogout());
+    navigate("/login");
+  };
 
   return (
     <div className="min-h-screen flex bg-info-100/15 overflow-hidden">
@@ -80,13 +96,8 @@ export default function DashboardLayout({
         }`}
       >
         <div>
-          <div className="px-6 py-4 flex gap-3 justify-center items-center border-b border-white">
-            <img
-              src={LogoFreshstart}
-              alt="Logo FreshStart"
-              className="h-10 w-10 shrink-0"
-            />
-            <h1 className="font-semibold text-lg truncate">FreshStart</h1>
+          <div className="px-6 pt-4 pb-2 flex gap-3 justify-center items-center border-b border-white">
+            <img src={LogoFreshstart} alt="Logo FreshStart" className="h-10 w-35 shrink-0" />
           </div>
 
           <nav className="p-4 space-y-2.5 overflow-y-auto">
@@ -101,7 +112,6 @@ export default function DashboardLayout({
                   />
                 );
               }
-
               return (
                 <MenuItem
                   key={menu.name}
@@ -138,9 +148,31 @@ export default function DashboardLayout({
             </p>
           </div>
 
-          <div className="bg-secondary flex items-center gap-2 text-white px-3 py-1.5 lg:py-1 rounded-full font-base text-xs lg:text-sm cursor-pointer hover:bg-secondary/90 transition-colors">
-            <span>Admin</span>
-            <MdKeyboardArrowDown className="h-5 w-5 lg:h-6 lg:w-6" />
+          <div className="relative">
+            <button
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              className="bg-secondary flex items-center gap-2 text-white px-3 py-1.5 lg:py-1 rounded-full text-xs lg:text-sm cursor-pointer hover:bg-secondary/90 transition-colors"
+            >
+              <span>Admin</span>
+              <MdKeyboardArrowDown className="h-5 w-5 lg:h-6 lg:w-6" />
+            </button>
+
+            {isMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setIsMenuOpen(false)} />
+                <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg border z-20 py-1">
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      setIsKeluarModalOpen(true);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 cursor-pointer"
+                  >
+                    Keluar
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </header>
 
@@ -156,13 +188,9 @@ export default function DashboardLayout({
               </Button>
             )}
             <div>
-              <h1 className="text-lg lg:text-xl font-semibold text-gray-800">
-                {title}
-              </h1>
+              <h1 className="text-lg lg:text-xl font-semibold text-gray-800">{title}</h1>
               {description && (
-                <p className="text-xs lg:text-sm text-gray-500 mt-1">
-                  {description}
-                </p>
+                <p className="text-xs lg:text-sm text-gray-500 mt-1">{description}</p>
               )}
             </div>
           </div>
@@ -170,6 +198,19 @@ export default function DashboardLayout({
           <div className="bg-white/50 rounded-xl">{children}</div>
         </div>
       </main>
+
+      <ModalNotification
+        visible={isKeluarModalOpen}
+        title="Yakin ingin keluar dari akun?"
+        subtitle="Sesi kamu akan diakhiri dan kamu perlu login kembali untuk melanjutkan."
+        button={{
+          type: "double",
+          cancelLabel: "Tidak",
+          confirmLabel: "Ya, Keluar",
+          onCancel: () => setIsKeluarModalOpen(false),
+          onConfirm: handleKeluar,
+        }}
+      />
     </div>
   );
 }

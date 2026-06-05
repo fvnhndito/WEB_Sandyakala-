@@ -196,7 +196,7 @@ export default function DataProject() {
                               ))}
                             </div>
                           ) : (
-                            <span className="text-neutral-400 text-xs italic">Belum ada</span>
+                            <span className="text-neutral-500 text-xs italic">Belum ada</span>
                           )}
                         </td>
                         <td className="border px-3 py-2">

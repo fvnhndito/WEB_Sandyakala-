@@ -10,6 +10,9 @@ const statCardVariants = cva(
         blue: "border-info-300 text-info-300",
         yellow: "border-warning text-warning",
         red: "border-error text-error",
+        success2: "border-emerald-600 text-emerald-600",
+        orange: "border-orange-600 text-orange-600",
+        gray: "border-slate-500 text-slate-500",
       },
     },
     defaultVariants: {

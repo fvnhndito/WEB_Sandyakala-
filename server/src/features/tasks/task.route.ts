@@ -8,7 +8,6 @@ import { safeGuard } from "../../common/middlewares/safeGuard.js";
 const router = Router();
 
 // [UMKM] Melihat daftar tugas berdasarkan Job ID
-// GET /api/tasks/job/:jobId
 router.get(
   "/job/:jobId",
   safeGuard(["UMKM"]),
@@ -16,7 +15,6 @@ router.get(
 );
 
 // [UMKM & FG] Melihat riwayat revisi sebuah tugas
-// GET /api/tasks/:taskId/revisions
 router.get(
   "/:taskId/revisions",
   safeGuard(["UMKM", "USER"]),
@@ -24,7 +22,6 @@ router.get(
 );
 
 // [UMKM] Memberikan review (setujui/revisi)
-// PUT /api/tasks/:taskId/review
 router.put(
   "/:taskId/review",
   safeGuard(["UMKM"]),
@@ -33,7 +30,6 @@ router.put(
 );
 
 // [FG] Mengirim hasil kerja
-// PUT /api/tasks/:taskId/submit
 router.put(
   "/:taskId/submit",
   safeGuard(["USER"]),

@@ -70,8 +70,8 @@ const JobService = {
 
     const filters = {
       search: query.search || undefined,
-      type: query.type || undefined, // Contoh: 'SHIFT' atau 'PROJECT'
-      shift: query.shift || undefined, // Contoh: 'PAGI' atau 'MALAM'
+      type: query.type || undefined, 
+      shift: query.shift || undefined, 
       limit,
       offset,
     };

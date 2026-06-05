@@ -41,7 +41,6 @@ export function DetailShiftContent({ shift, onClose }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* GRID DETAIL */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-neutral-100 rounded-lg p-3">
           {/* tanggal shift */}

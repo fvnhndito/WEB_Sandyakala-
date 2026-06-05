@@ -2,6 +2,7 @@ import pool from "../../config/db.js";
 import type { CreateJobInput } from "./job.schema.js";
 
 const JobRepository = {
+  // buat lowongan
   createJob: async (
     umkmId: number,
     data: CreateJobInput,
@@ -219,6 +220,7 @@ const JobRepository = {
     };
   },
 
+  // ambil data lowongan
   getJobsByUmkmId: async (umkmId: number, limit: number, offset: number) => {
     const baseQuery = `
       SELECT 
@@ -247,6 +249,7 @@ const JobRepository = {
     };
   },
 
+  // edit lowongan
   updateJob: async (
     jobId: number,
     umkmId: number,
@@ -355,6 +358,7 @@ const JobRepository = {
     }
   },
 
+  // hapus lowongan
   deleteJob: async (jobId: number, umkmId: number) => {
     const [result]: any = await pool.execute(
       "DELETE FROM jobs WHERE id = ? AND umkm_id = ?",
@@ -392,6 +396,7 @@ const JobRepository = {
     }
   },
 
+  // untuk simpan lowongan
   getMySavedJobs: async (userId: number, limit: number, offset: number) => {
     const baseQuery = `
       SELECT 

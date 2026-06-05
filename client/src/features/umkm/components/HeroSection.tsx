@@ -32,7 +32,7 @@ export default function HeroSection(props: HeroSectionProps) {
   return (
     <section className="w-full pt-16 md:pt-12 bg-white">
       <div
-        className="relative bg-cover bg-center min-h-[350px] md:h-87.5 w-full pb-20 md:pb-0"
+        className="relative bg-cover bg-center min-h-350px md:h-87.5 w-full pb-20 md:pb-0"
         style={{ backgroundImage: `url(${bgImage})` }}
       >
         {/* Overlay Gelap */}
@@ -41,28 +41,27 @@ export default function HeroSection(props: HeroSectionProps) {
         <div className="relative z-10 container px-4 md:px-8 pt-8 md:pt-18 h-full flex flex-col">
           {isShowTabs && (
             <div className="flex flex-col md:flex-row justify-between md:items-center gap-5 w-full">
-              {isShowTabs && (
-                <div className="flex overflow-x-auto gap-3 pb-2 w-full md:w-auto scrollbar-hide items-center">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.key}
-                      onClick={() => setActiveTab && setActiveTab(tab.key)}
-                      className={cn(
-                        "md:px-5 cursor-pointer px-3.5 py-1.5 md:py-2.5 rounded-full text-xs md:text-sm font-base transition-all whitespace-nowrap",
-                        activeTab === tab.key
-                          ? "bg-white text-mint-300 shadow-sm" // State Aktif
-                          : "border border-white/80 text-white hover:bg-white/20 hover:border-white", // State Inaktif
-                      )}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className="flex overflow-x-auto gap-3 pb-2 w-full md:w-auto scrollbar-hide items-center">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setActiveTab?.(tab.key)}
+                    className={cn(
+                      "md:px-5 px-3.5 py-1.5 md:py-2.5 rounded-full text-xs md:text-sm font-base transition-all whitespace-nowrap cursor-pointer",
+                      activeTab === tab.key
+                        ? "bg-white text-mint-300 shadow-sm"
+                        : "border border-white/80 text-white hover:bg-white/20 hover:border-white",
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
 
               {isShowButtonRight && (
                 <Link
-                  to={"/umkm/dashboard/lamaran-masuk"}
+                  to="/umkm/dashboard/lamaran-masuk"
                   className="md:px-5 px-3.5 py-1.5 md:py-2.5 rounded-full bg-white text-mint font-medium text-xs md:text-sm shadow-md hover:bg-gray-50 transition-colors w-fit"
                 >
                   Seleksi Pelamar
@@ -78,7 +77,7 @@ export default function HeroSection(props: HeroSectionProps) {
                   {title}
                 </h2>
                 <p className="text-gray-200 text-sm font-medium">
-                  {description}
+                  {description ?? ""}
                 </p>
               </>
             ) : (
@@ -95,9 +94,9 @@ export default function HeroSection(props: HeroSectionProps) {
 
       <div className="relative z-20 container mx-auto px-4 md:px-8 md:-mt-19 -mt-16 pb-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {statCardData.map((card, index) => (
+          {statCardData.map((card) => (
             <StatCard
-              key={index}
+              key={card.title}
               title={card.title}
               value={card.value}
               colorClass={card.colorClass}

@@ -193,24 +193,24 @@ export const dataStatCard: StatCard = {
   ],
   shift: [
     {
-      title: "Shift Aktif",
+      title: "Total Shift",
       value: "12",
       colorClass: "text-primary",
     },
     {
-      title: "Perlu Konfirmasi",
+      title: "Shift Pagi",
       value: "5",
       colorClass: "text-warning",
     },
     {
-      title: "Shift Selesai",
+      title: "Shift Siang",
       value: "3",
-      colorClass: "text-success",
+      colorClass: "text-blue-500",
     },
     {
-      title: "Total Shift",
+      title: "Shift Malam",
       value: "5",
-      colorClass: "text-success",
+      colorClass: "text-indigo-500",
     },
   ],
 };
@@ -486,18 +486,18 @@ export const mockShifts: Shift[] = [
     divisi_shift: "UI/UX Designer",
     nama_pekerja_shift: "Rizky Handoko",
     nama_shift: "Morning Design Review",
-    list_tugas_shift: [
-      "Membuat wireframe",
-      "Revisi dashboard",
-      "Push Github",
-    ],
+    // list_tugas_shift: [
+    //   "Membuat wireframe",
+    //   "Revisi dashboard",
+    //   "Push Github",
+    // ],
     waktu_mulai_shift: "08:00",
     waktu_selesai_shift: "12:00",
-    jenis_shift: "pagi",
+    jenis_shift: "Pagi",
     tanggal_shift: "2026-05-07",
-    jam_masuk: "07:55",
-    jam_pulang: "12:05",
-    status_shift: "Review",
+    // jam_masuk: "07:55",
+    // jam_pulang: "12:05",
+    // status_shift: "Review",
   },
 ];
 

@@ -1,72 +1,102 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/shared/layouts/DashboardLayout";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { SearchInput } from "@/shared/components/ui/search-input";
 import { StatCard } from "@/shared/components/ui/stat-card";
 import { Link } from "react-router-dom";
-import { dataStatCardVerification } from "@/features/admin/constants/data-dashboard";
 import { apiRequest } from "@/shared/lib/api";
 
-const dataCta = [
-  {
-    title: "Menunggu",
-  },
-  {
-    title: "Terverifikasi",
-  },
-  {
-    title: "Ditolak",
-  },
+type StatusType = "pending" | "approved" | "rejected";
+
+type FilterType = "semua" | StatusType;
+
+interface UmkmProfile {
+  id: string;
+  businessName: string;
+  businessEmail: string;
+  status: StatusType;
+  email: string;
+}
+
+const FILTER_OPTIONS: { label: string; value: FilterType }[] = [
+  { label: "Semua", value: "semua" },
+  { label: "Menunggu", value: "pending" },
+  { label: "Diverifikasi", value: "approved" },
+  { label: "Ditolak", value: "rejected" },
 ];
 
+const STATUS_LABEL: Record<StatusType, string> = {
+  pending: "Menunggu",
+  approved: "Diverifikasi",
+  rejected: "Ditolak",
+};
+
+const STATUS_BADGE_VARIANT: Record<
+  StatusType,
+  "warning" | "primary" | "error"
+> = {
+  pending: "warning",
+  approved: "primary",
+  rejected: "error",
+};
+
 export default function VerificationAdmin() {
-  const [registeredProfiles, setRegisteredProfiles] = useState<any[]>([]);
+  const [registeredProfiles, setRegisteredProfiles] = useState<UmkmProfile[]>(
+    [],
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<FilterType>("semua");
 
   useEffect(() => {
     const fetchProfiles = async () => {
       const response = await apiRequest<any[]>("/umkm");
       if (response.success && response.data) {
-        const mapped = response.data.map((p: any) => ({
+        const mapped: UmkmProfile[] = response.data.map((p: any) => ({
           id: p.id_umkm,
           businessName: p.business_name,
           businessEmail: p.business_email,
-          status: p.status?.toLowerCase() || "pending",
+          status: (p.status?.toLowerCase() as StatusType) || "pending",
           email: p.business_email,
         }));
         setRegisteredProfiles(mapped);
       } else {
-        // Fallback to localStorage if API fails
+        // fallback localStorage
         let savedEmailsStr = localStorage.getItem("registered_umkm_emails");
         let emails: string[] = [];
         if (savedEmailsStr) {
           try {
-            emails = JSON.parse(savedEmailsStr);
-            if (!Array.isArray(emails)) {
-              emails = [];
-            }
-          } catch (e) {
+            const parsed = JSON.parse(savedEmailsStr);
+            if (Array.isArray(parsed)) emails = parsed;
+          } catch {
             emails = [];
           }
         }
 
-        const latestEmail = localStorage.getItem("latest_registered_umkm_email");
+        const latestEmail = localStorage.getItem(
+          "latest_registered_umkm_email",
+        );
         if (latestEmail && !emails.includes(latestEmail)) {
           emails.push(latestEmail);
         }
 
-        const profiles: any[] = [];
+        const profiles: UmkmProfile[] = [];
+        const seenEmails = new Set<string>();
         emails.forEach((email) => {
-          const profileStr = localStorage.getItem(`registered_umkm_profile_${email}`);
-          const statusStr = localStorage.getItem(`umkm_verification_status_${email}`) || "pending";
+          if (seenEmails.has(email)) return; // ✅ skip duplikat
+          seenEmails.add(email);
+
+          const profileStr = localStorage.getItem(
+            `registered_umkm_profile_${email}`,
+          );
+          const status =
+            (localStorage.getItem(
+              `umkm_verification_status_${email}`,
+            ) as StatusType) || "pending";
           if (profileStr) {
             try {
               const profile = JSON.parse(profileStr);
-              profiles.push({
-                ...profile,
-                email,
-                status: statusStr,
-              });
+              profiles.push({ ...profile, email, status });
             } catch (e) {
               console.error("Error parsing profile for email", email, e);
             }
@@ -78,21 +108,65 @@ export default function VerificationAdmin() {
     fetchProfiles();
   }, []);
 
+  const stats = useMemo(
+    () => ({
+      total: registeredProfiles.length,
+      pending: registeredProfiles.filter((p) => p.status === "pending").length,
+      approved: registeredProfiles.filter((p) => p.status === "approved")
+        .length,
+      rejected: registeredProfiles.filter((p) => p.status === "rejected")
+        .length,
+    }),
+    [registeredProfiles],
+  );
+
+  // Filter + search
+  const filteredProfiles = useMemo(() => {
+    return registeredProfiles.filter((profile) => {
+      const matchesFilter =
+        activeFilter === "semua" || profile.status === activeFilter;
+
+      const query = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        query === "" ||
+        profile.businessName?.toLowerCase().includes(query) ||
+        profile.businessEmail?.toLowerCase().includes(query);
+
+      return matchesFilter && matchesSearch;
+    });
+  }, [registeredProfiles, activeFilter, searchQuery]);
+
   return (
     <DashboardLayout
       title="Verifikasi Akun UMKM"
       description="Kelola dan verifikasi pengajuan akun baru"
     >
+      {/* Stat Cards — nilai dinamis dari data */}
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-8 mb-4">
-        {dataStatCardVerification.map((item, index) => (
-          <StatCard
-            key={index}
-            variant={item.variant}
-            title={item.title}
-            value={item.value}
-            description={item.description}
-          />
-        ))}
+        <StatCard
+          variant="blue"
+          title="Total Pengajuan"
+          value={stats.total}
+          description="Semua akun yang masuk"
+        />
+        <StatCard
+          variant="yellow"
+          title="Menunggu"
+          value={stats.pending}
+          description="Belum diverifikasi"
+        />
+        <StatCard
+          variant="green"
+          title="Diverifikasi"
+          value={stats.approved}
+          description="Akun telah disetujui"
+        />
+        <StatCard
+          variant="red"
+          title="Ditolak"
+          value={stats.rejected}
+          description="Akun tidak disetujui"
+        />
       </div>
 
       <div className="my-8">
@@ -103,28 +177,35 @@ export default function VerificationAdmin() {
       </div>
 
       <div className="flex flex-col md:flex-row lg:items-center lg:justify-between gap-4 mb-7">
+        {/* Search */}
         <div className="relative w-full md:max-w-xl lg:max-w-md">
-          <SearchInput placeholder="Cari nama atau perusahaan...." />
+          <SearchInput
+            placeholder="Cari nama usaha atau email usaha...."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
 
-        <div className="flex gap-3">
-          <Button className="rounded-full font-semibold" size={"sm"}>
-            Semua
-          </Button>
-          {dataCta.map((item, index) => (
+        {/* Filter buttons */}
+        <div className="flex gap-3 flex-wrap">
+          {FILTER_OPTIONS.map((option) => (
             <Button
-              key={index}
-              variant={"soft"}
-              className="rounded-full font-semibold border border-info-200"
-              size={"sm"}
+              key={option.value}
+              variant={activeFilter === option.value ? "primary" : "soft"}
+              className={`rounded-full font-semibold border border-info-200 ${
+                activeFilter === option.value ? "" : ""
+              }`}
+              size="sm"
+              onClick={() => setActiveFilter(option.value)}
             >
-              {item.title}
+              {option.label}
             </Button>
           ))}
         </div>
       </div>
 
-      <div className=" rounded-lg overflow-x-scroll md:overflow-x-hidden overflow-hidden">
+      {/* Table */}
+      <div className="rounded-lg overflow-x-scroll md:overflow-x-hidden overflow-hidden">
         <table className="w-full">
           <thead className="bg-blue-100 text-sm overflow-hidden">
             <tr>
@@ -137,86 +218,52 @@ export default function VerificationAdmin() {
           </thead>
 
           <tbody className="text-sm">
-            <tr className="bg-white">
-              <td className="table-data">1</td>
-              <td className="table-data">Sambal Bakar Nusantara</td>
-              <td className="table-data">mamat@mail.com</td>
-              <td className="table-data">
-                <Badge
-                  size={"sm"}
-                  variant={"primary"}
-                  className="border-none text-black "
+            {filteredProfiles.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="text-center py-10 text-gray-400 text-sm"
                 >
-                  Verifikasi
-                </Badge>
-              </td>
-              <td className="table-data ">
-                <Link
-                  to={"/admin/verifikasi-umkm/sambal-bakar-nusantara"}
-                  className="text-center block underline text-blue-600 cursor-pointer"
-                >
-                  Detail
-                </Link>
-              </td>
-            </tr>
-
-            <tr className="bg-white">
-              <td className="table-data">2</td>
-              <td className="table-data">Cendol Jaya</td>
-              <td className="table-data">sarti@mail.com</td>
-              <td className="table-data">
-                <Badge
-                  size={"sm"}
-                  variant={"error"}
-                  className="border-none text-black  px-3"
-                >
-                  Tolak
-                </Badge>
-              </td>
-              <td className="table-data">
-                <Link
-                  to={"/admin/verifikasi-umkm/cendol-jaya"}
-                  className="text-center block underline text-blue-600 cursor-pointer"
-                >
-                  Detail
-                </Link>
-              </td>
-            </tr>
-
-            {registeredProfiles.map((profile, idx) => (
-              <tr key={profile.email} className="bg-white border-b border-gray-100">
-                <td className="table-data">{3 + idx}</td>
-                <td className="table-data font-bold text-gray-900">{profile.businessName}</td>
-                <td className="table-data text-gray-600">{profile.businessEmail}</td>
-                <td className="table-data">
-                  <Badge
-                    size={"sm"}
-                    variant={
-                      profile.status === "approved"
-                        ? "primary"
-                        : profile.status === "rejected"
-                        ? "error"
-                        : "primary"
-                    }
-                    className="border-none text-black"
-                  >
-                    {profile.status === "approved"
-                      ? "Terverifikasi"
-                      : profile.status === "rejected"
-                      ? "Ditolak"
-                      : "Verifikasi"}
-                  </Badge>
-                </td>
-                <td className="table-data">
-                  <Link
-                    to={`/admin/verifikasi-umkm/${profile.businessName.toLowerCase().replace(/\s+/g, "-")}`}
-                    className="text-center block underline text-blue-600 cursor-pointer"
-                  >
-                    Detail
-                  </Link>
+                  {searchQuery
+                    ? `Tidak ada hasil untuk "${searchQuery}"`
+                    : "Tidak ada data pengajuan."}
                 </td>
               </tr>
-            ))}
+            ) : (
+              filteredProfiles.map((profile, idx) => (
+                <tr
+                  key={`${profile.email}-${idx}`}
+                  className="bg-white border-b border-gray-100"
+                >
+                  <td className="table-data">{idx + 1}</td>
+                  <td className="table-data font-bold text-gray-900">
+                    {profile.businessName}
+                  </td>
+                  <td className="table-data text-gray-600">
+                    {profile.businessEmail}
+                  </td>
+                  <td className="table-data">
+                    <Badge
+                      size="sm"
+                      variant={STATUS_BADGE_VARIANT[profile.status]}
+                      className="border-none text-black"
+                    >
+                      {STATUS_LABEL[profile.status]}
+                    </Badge>
+                  </td>
+                  <td className="table-data">
+                    <Link
+                      to={`/admin/verifikasi-umkm/${profile.businessName
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}`}
+                      className="text-center block border p-0.5 border-primary rounded-md text-blue-600 cursor-pointer hover:bg-primary/25"
+                    >
+                      Detail
+                    </Link>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

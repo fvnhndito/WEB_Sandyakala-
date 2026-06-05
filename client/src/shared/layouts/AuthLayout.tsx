@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import ImageAuth from "@/assets/images/Image Auth.png";
+import { useAppSelector } from "../stores/hook";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -7,6 +8,12 @@ interface AuthLayoutProps {
 }
 
 export default function AuthLayout({ children, type }: AuthLayoutProps) {
+  const authSelector = useAppSelector((state) => state.auth);
+
+  if (authSelector.id) {
+    return <Navigate to="/" />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
       <div className="w-full max-w-5xl p-6">

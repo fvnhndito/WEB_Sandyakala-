@@ -58,7 +58,7 @@ const TaskService = {
       throw new Error("Tugas ini tidak dalam status menunggu tinjauan.");
     }
 
-    // Jika disetujui → SELESAI, jika tidak → REVISI
+    // Jika disetujui = SELESAI, jika tidak = REVISI
     const status = data.is_approved ? STATUS.SELESAI : STATUS.REVISI;
     const finalNote = data.is_approved ? null : (data.revision_note ?? null);
 

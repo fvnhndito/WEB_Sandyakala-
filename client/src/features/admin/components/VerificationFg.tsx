@@ -5,7 +5,7 @@ import { Button } from "@/shared/components/ui/button";
 import { SearchInput } from "@/shared/components/ui/search-input";
 import { StatCard } from "@/shared/components/ui/stat-card";
 import { Link } from "react-router-dom";
-// import { apiRequest } from "@/shared/lib/api";
+import { apiRequest } from "@/shared/lib/api";
 
 type StatusType = "pending" | "approved" | "rejected";
 type FilterType = "semua" | StatusType;
@@ -34,25 +34,6 @@ const STATUS_LABEL: Record<StatusType, string> = {
 
 type BadgeVariant = "warning" | "primary" | "error";
 
-const DUMMY_PROFILES: FgProfile[] = [
-  {
-    id: "1",
-    fullName: "Kathryn Murphy",
-    phone: "08123456789",
-    lastEducation: "S1 Desain Komunikasi Visual",
-    status: "approved",
-    email: "kathryn@mail.com",
-  },
-  {
-    id: "2",
-    fullName: "Devon Lane",
-    phone: "081234567890",
-    lastEducation: "S1 Teknik Informatika",
-    status: "rejected",
-    email: "devon@mail.com",
-  },
-];
-
 const STATUS_BADGE_VARIANT: Record<StatusType, BadgeVariant> = {
   pending: "warning",
   approved: "primary",
@@ -65,60 +46,59 @@ export default function VerificationFg() {
   const [activeFilter, setActiveFilter] = useState<FilterType>("semua");
 
   useEffect(() => {
-    setRegisteredProfiles(DUMMY_PROFILES);
-    // const fetchProfiles = async () => {
-    //   const response = await apiRequest<any[]>("/fresh-graduate");
-    //   if (response.success && response.data) {
-    //     const mapped: FgProfile[] = response.data.map((p: any) => ({
-    //       id: p.id_fg,
-    //       fullName: p.full_name,
-    //       phone: p.phone,
-    //       lastEducation: p.last_education,
-    //       status: (p.status?.toLowerCase() as StatusType) || "pending",
-    //       email: p.email,
-    //     }));
-    //     setRegisteredProfiles(DUMMY_PROFILES);
-    //   } else {
-    //     // Fallback localStorage
-    //     let savedEmailsStr = localStorage.getItem("registered_fg_emails");
-    //     let emails: string[] = [];
-    //     if (savedEmailsStr) {
-    //       try {
-    //         const parsed = JSON.parse(savedEmailsStr);
-    //         if (Array.isArray(parsed)) emails = parsed;
-    //       } catch {
-    //         emails = [];
-    //       }
-    //     }
+    const fetchProfiles = async () => {
+      const response = await apiRequest<any[]>("/freshgraduate");
+      if (response.success && response.data) {
+        const mapped: FgProfile[] = response.data.map((p: any) => ({
+          id: p.id.toString(),
+          fullName: p.fullName || p.fullname,
+          phone: p.phone || p.no_hp || "-",
+          lastEducation: p.lastEducation || p.last_education || "-",
+          status: (p.status?.toLowerCase() as StatusType) || "pending",
+          email: p.email,
+        }));
+        setRegisteredProfiles(mapped);
+      } else {
+        // Fallback localStorage
+        let savedEmailsStr = localStorage.getItem("registered_fg_emails");
+        let emails: string[] = [];
+        if (savedEmailsStr) {
+          try {
+            const parsed = JSON.parse(savedEmailsStr);
+            if (Array.isArray(parsed)) emails = parsed;
+          } catch {
+            emails = [];
+          }
+        }
 
-    //     const latestEmail = localStorage.getItem("latest_registered_fg_email");
-    //     if (latestEmail && !emails.includes(latestEmail)) {
-    //       emails.push(latestEmail);
-    //     }
+        const latestEmail = localStorage.getItem("latest_registered_fg_email");
+        if (latestEmail && !emails.includes(latestEmail)) {
+          emails.push(latestEmail);
+        }
 
-    //     const profiles: FgProfile[] = [];
-    //     const seenEmails = new Set<string>();
+        const profiles: FgProfile[] = [];
+        const seenEmails = new Set<string>();
 
-    //     emails.forEach((email) => {
-    //       if (seenEmails.has(email)) return;
-    //       seenEmails.add(email);
+        emails.forEach((email) => {
+          if (seenEmails.has(email)) return;
+          seenEmails.add(email);
 
-    //       const profileStr = localStorage.getItem(`registered_fg_profile_${email}`);
-    //       const status =
-    //         (localStorage.getItem(`fg_verification_status_${email}`) as StatusType) || "pending";
-    //       if (profileStr) {
-    //         try {
-    //           const profile = JSON.parse(profileStr);
-    //           profiles.push({ ...profile, email, status });
-    //         } catch (e) {
-    //           console.error("Error parsing profile for email", email, e);
-    //         }
-    //       }
-    //     });
-    //     setRegisteredProfiles(profiles);
-    //   }
-    // };
-    // fetchProfiles();
+          const profileStr = localStorage.getItem(`registered_fg_profile_${email}`);
+          const status =
+            (localStorage.getItem(`fg_verification_status_${email}`) as StatusType) || "pending";
+          if (profileStr) {
+            try {
+              const profile = JSON.parse(profileStr);
+              profiles.push({ ...profile, email, status });
+            } catch (e) {
+              console.error("Error parsing profile for email", email, e);
+            }
+          }
+        });
+        setRegisteredProfiles(profiles);
+      }
+    };
+    fetchProfiles();
   }, []);
 
   const stats = useMemo(
@@ -262,9 +242,7 @@ export default function VerificationFg() {
                   </td>
                   <td className="table-data">
                     <Link
-                      to={`/admin/verifikasi-freshgraduate/${profile.fullName
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`}
+                      to={`/admin/verifikasi-freshgraduate/${profile.email}`}
                       className="text-center block border p-0.5 border-primary rounded-md text-blue-600 cursor-pointer hover:bg-primary/25"
                     >
                       Detail

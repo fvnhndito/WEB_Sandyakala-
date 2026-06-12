@@ -1,10 +1,11 @@
 import { IoClose } from "react-icons/io5";
 
-interface ProfileModalProps {
+type ProfileModalProps = {
   title?: string;
   onClose?: () => void;
   onSubmit?: () => void;
   submitLabel?: string;
+  isSubmitting?: boolean;
   children: React.ReactNode;
 }
 
@@ -12,7 +13,8 @@ export default function ProfileModal({
   title = "Edit Profile UMKM",
   onClose,
   onSubmit,
-  submitLabel = "Simpan",
+  submitLabel,
+  isSubmitting = false,
   children,
 }: ProfileModalProps) {
   return (
@@ -35,9 +37,10 @@ export default function ProfileModal({
         <div className="px-6 pb-6">
           <button
             onClick={onSubmit}
+            disabled={isSubmitting}
             className="w-full py-3 rounded-full bg-mint-100 text-mint font-semibold text-sm hover:bg-mint-200/75 cursor-pointer transition"
           >
-            {submitLabel}
+            {submitLabel ?? "Simpan"}
           </button>
         </div>
       </div>

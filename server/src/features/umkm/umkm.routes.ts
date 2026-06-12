@@ -33,4 +33,29 @@ umkmRouter.patch(
   asyncHandler(UmkmController.updateStatus),
 );
 
+umkmRouter.get(
+  "/benefits",
+  asyncHandler(UmkmController.getBenefits),
+);
+ 
+umkmRouter.post(
+  "/benefits",
+  asyncHandler(UmkmController.addBenefit),
+);
+ 
+umkmRouter.delete(
+  "/benefits/:benefitId",
+  asyncHandler(UmkmController.deleteBenefit),
+);
+ 
+umkmRouter.patch(
+  "/description",
+  asyncHandler(UmkmController.updateDescription),
+);
+ 
+umkmRouter.get(
+  "/reviews",
+  asyncHandler(UmkmController.getReviews),
+);
+
 export default umkmRouter;

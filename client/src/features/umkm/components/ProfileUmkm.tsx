@@ -4,16 +4,15 @@ import { Card } from "./ui/Card";
 import { FiTrash } from "react-icons/fi";
 import { IoLocationSharp, IoPeople } from "react-icons/io5";
 import { MdStore, MdVerified } from "react-icons/md";
-import { BiSolidBriefcaseAlt } from "react-icons/bi";
 import { HiOutlineMenuAlt2, HiViewGridAdd } from "react-icons/hi";
 import { FaGift, FaStar } from "react-icons/fa6";
 import InfoBadge from "./ui/InfoBadge";
 import { Button } from "@/shared/components/ui/button";
-import { mockTestimonials } from "../constants/mock-data";
 import type { IconType } from "react-icons";
 import { cn } from "@/shared/lib/utils";
 import { ProfileUmkmProvider, useProfileUmkm } from "./ProfileUmkmContext";
 import ProfileUmkmModals from "./ProfileUmkmModals";
+import { useState } from "react";
 
 const SectionHeader: React.FC<{
   title: string;
@@ -27,7 +26,7 @@ const SectionHeader: React.FC<{
     </div>
     {actionText && (
       <Button
-        variant={"outline"}
+        variant="outline"
         onClick={onAction}
         className="px-4 py-1 rounded-full border border-teal-300 text-teal-500 text-sm font-medium hover:bg-teal-50 transition-colors"
       >
@@ -47,6 +46,7 @@ type EmptySectionProps = {
   icon: IconType;
   title: string;
   actionLabel?: string;
+  onAction?: () => void;
   className?: string;
 };
 
@@ -54,31 +54,66 @@ export const EmptySection = ({
   icon: Icon,
   title,
   actionLabel,
+  onAction,
   className,
-}: EmptySectionProps) => {
-  return (
-    <div className={cn("flex flex-col gap-4 items-center w-full text-center", className)}>
-      <div className="h-12 w-12 bg-gray-100 flex justify-center items-center p-2 rounded-full">
-        <Icon className="h-full w-full text-mint" />
-      </div>
-      <p className="text-sm md:text-base text-gray-400">{title}</p>
-      {actionLabel && (
-        <Button variant="mint" size={"sm"} className="rounded-md">
-          {actionLabel}
-        </Button>
-      )}
+}: EmptySectionProps) => (
+  <div
+    className={cn(
+      "flex flex-col gap-4 items-center w-full text-center py-4",
+      className,
+    )}
+  >
+    <div className="h-12 w-12 bg-gray-100 flex justify-center items-center p-2 rounded-full">
+      <Icon className="h-full w-full text-mint" />
     </div>
-  );
-};
+    <p className="text-sm md:text-base text-gray-400">{title}</p>
+    {actionLabel && (
+      <Button
+        variant="mint"
+        size="sm"
+        className="rounded-md"
+        onClick={onAction}
+      >
+        {actionLabel}
+      </Button>
+    )}
+  </div>
+);
+
+const SkeletonLines = ({ count = 3 }: { count?: number }) => (
+  <div className="flex flex-col gap-3 animate-pulse">
+    {Array.from({ length: count }).map((_, i) => (
+      <div
+        key={i}
+        className="h-4 bg-gray-100 rounded w-full"
+        style={{ width: `${80 - i * 10}%` }}
+      />
+    ))}
+  </div>
+);
 
 function ProfileUmkmContent() {
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const {
     openModal,
-    namaUsaha, keteranganUsaha, lokasiUsaha,
-    tahunDibangun, jumlahKaryawan, kategoriUsaha,
-    fasilitas, handleHapusFasilitas,
-    website, emailHrd, telepon, alamat,
+    namaUsaha,
+    keteranganUsaha,
+    lokasiUsaha,
+    tahunDibangun,
+    jumlahKaryawan,
+    kategoriUsaha,
     logoUsaha,
+    website,
+    emailHrd,
+    telepon,
+    alamat,
+    deskripsiUsaha,
+    benefits,
+    benefitsLoading,
+    handleHapusFasilitas,
+    reviews,
+    reviewsLoading,
+    isLoading,
   } = useProfileUmkm();
 
   return (
@@ -88,9 +123,9 @@ function ProfileUmkmContent() {
           className="relative bg-cover bg-center h-70 w-full"
           style={{ backgroundImage: `url(${BgImgRekrutmen})` }}
         />
-
         <div className="relative z-20 container mx-auto md:px-8 md:-mt-19 -mt-15 sm:-mt-20 pb-12">
           <Card className="w-full flex flex-col md:h-60 md:flex-row items-start md:items-center gap-6 relative">
+            {/* Logo */}
             <div className="w-24 h-24 md:w-34 md:h-34 rounded-full overflow-hidden bg-[#FFEDD5] flex items-center justify-center shrink-0 border border-gray-100 shadow-sm">
               {logoUsaha ? (
                 <img
@@ -117,13 +152,17 @@ function ProfileUmkmContent() {
                   </p>
                   <div className="flex flex-wrap items-center gap-2">
                     <InfoBadge icon={<IoLocationSharp />} text={lokasiUsaha} />
-                    <InfoBadge icon={<MdStore />} text={`Berdiri sejak ${tahunDibangun}`} />
-                    <InfoBadge icon={<IoPeople />} text={`${jumlahKaryawan} Karyawan`} />
-                    <InfoBadge icon={<BiSolidBriefcaseAlt />} text="4 Lowongan Aktif" />
+                    <InfoBadge
+                      icon={<MdStore />}
+                      text={`Berdiri sejak ${tahunDibangun}`}
+                    />
+                    <InfoBadge
+                      icon={<IoPeople />}
+                      text={`${jumlahKaryawan} Karyawan`}
+                    />
                     <InfoBadge icon={<HiViewGridAdd />} text={kategoriUsaha} />
                   </div>
                 </div>
-
                 <button
                   onClick={() => openModal("profile")}
                   className="absolute top-6 right-6 md:static px-5 py-1.5 rounded-full border border-teal-300 text-teal-500 text-xs md:text-sm font-semibold hover:bg-teal-50 transition-colors shrink-0 cursor-pointer"
@@ -143,27 +182,43 @@ function ProfileUmkmContent() {
               <Card>
                 <SectionHeader
                   title="Tentang Kami"
-                  actionText="Ubah"
+                  actionText={deskripsiUsaha ? "Ubah" : undefined}
                   onAction={() => openModal("tentang")}
                 />
-                <EmptySection
-                  icon={HiOutlineMenuAlt2}
-                  title="Belum ada deskripsi usaha"
-                  actionLabel="Tambah Deskripsi"
-                />
+                {isLoading ? (
+                  <SkeletonLines count={4} />
+                ) : deskripsiUsaha ? (
+                  <p className="text-sm md:text-sm text-gray-600 leading-relaxed whitespace-pre-wrap text-justify">
+                    {deskripsiUsaha}
+                  </p>
+                ) : (
+                  <EmptySection
+                    icon={HiOutlineMenuAlt2}
+                    title="Belum ada deskripsi usaha"
+                    actionLabel="Tambah Deskripsi"
+                    onAction={() => openModal("tentang")}
+                  />
+                )}
               </Card>
 
+              {/* Keuntungan & Fasilitas */}
               <Card>
                 <SectionHeader
                   title="Keuntungan & Fasilitas"
                   actionText="Tambah"
                   onAction={() => openModal("fasilitas")}
                 />
-                {fasilitas.length > 0 ? (
+                {benefitsLoading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-pulse">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="bg-gray-100 rounded-xl h-24" />
+                    ))}
+                  </div>
+                ) : benefits.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {fasilitas.map((benefit: { id: string; title: string; description: string }) => (
+                    {benefits.map((benefit) => (
                       <div
-                        key={benefit.id}
+                        key={benefit.id_benefit}
                         className="bg-neutral-100 rounded-xl p-4 flex flex-col justify-between relative group"
                       >
                         <div>
@@ -174,12 +229,13 @@ function ProfileUmkmContent() {
                             {benefit.description}
                           </p>
                         </div>
-                        <div
-                          onClick={() => handleHapusFasilitas(benefit.id)}
-                          className="absolute bottom-4 right-4 opacity-50 hover:opacity-100 hover:text-error cursor-pointer"
+                        <button
+                          onClick={() => setDeleteId(benefit.id_benefit)}
+                          className="absolute bottom-4 right-4 opacity-50 hover:opacity-100 hover:text-red-500 cursor-pointer transition-opacity"
+                          title="Hapus fasilitas"
                         >
                           <FiTrash />
-                        </div>
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -188,6 +244,7 @@ function ProfileUmkmContent() {
                     icon={FaGift}
                     title="Belum ada informasi fasilitas"
                     actionLabel="Tambah Fasilitas"
+                    onAction={() => openModal("fasilitas")}
                   />
                 )}
               </Card>
@@ -201,68 +258,106 @@ function ProfileUmkmContent() {
                   onAction={() => openModal("kontak")}
                 />
                 <div className="space-y-3">
-                  <div className="bg-neutral-100 rounded-xl p-4">
-                    <span className="block text-xs font-medium text-info-300 mb-1">
-                      Website/Sosial Media
-                    </span>
-                    <span className="block text-sm font-medium text-gray-800">
-                      {website}
-                    </span>
-                  </div>
-                  <div className="bg-neutral-100 rounded-xl p-4">
-                    <span className="block text-xs font-medium text-info-300 mb-1">
-                      Email Usaha
-                    </span>
-                    <span className="block text-sm font-medium text-gray-800">
-                      {emailHrd}
-                    </span>
-                  </div>
-                  <div className="bg-neutral-100 rounded-xl p-4">
-                    <span className="block text-xs font-medium text-info-300 mb-1">
-                      Telepon
-                    </span>
-                    <span className="block text-sm font-medium text-gray-800">
-                      {telepon}
-                    </span>
-                  </div>
-                  <div className="bg-neutral-100 rounded-xl p-4">
-                    <span className="block text-xs font-medium text-info-300 mb-1">
-                      Alamat
-                    </span>
-                    <span className="block text-sm font-medium text-gray-800">
-                      {alamat}
-                    </span>
-                  </div>
+                  {[
+                    { label: "Website/Sosial Media", value: website },
+                    { label: "Email Usaha", value: emailHrd },
+                    { label: "Telepon", value: telepon },
+                    { label: "Alamat", value: alamat },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="bg-neutral-100 rounded-xl p-4">
+                      <span className="block text-xs font-medium text-info-300 mb-1">
+                        {label}
+                      </span>
+                      <span className="block text-sm font-medium text-gray-800 wrap-break-word">
+                        {value || (
+                          <span className="text-gray-400 italic">
+                            Belum diisi
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </Card>
             </div>
           </div>
 
+          {/*  Kata Karyawan Kami  */}
           <Card>
             <SectionHeader title="Kata Karyawan Kami" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {mockTestimonials.map((testimoni) => (
-                <div
-                  key={testimoni.id}
-                  className="bg-neutral-100 rounded-xl p-5 flex flex-col h-full"
-                >
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(testimoni.rating)].map((_, i) => (
-                      <FaStar key={i} className="fill-warning-200" />
-                    ))}
+            {reviewsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-gray-100 rounded-xl h-40" />
+                ))}
+              </div>
+            ) : reviews.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {reviews.map((review) => (
+                  <div
+                    key={review.id}
+                    className="bg-neutral-100 rounded-xl p-5 flex flex-col h-full"
+                  >
+                    <div className="flex gap-1 mb-4">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <FaStar
+                          key={i}
+                          className={
+                            i < review.rating
+                              ? "fill-warning-200"
+                              : "fill-gray-300"
+                          }
+                        />
+                      ))}
+                    </div>
+                    <p className="text-sm text-info-300 opacity-80 leading-relaxed mb-6 grow">
+                      "{review.review_text}"
+                    </p>
+                    <h4 className="font-bold text-gray-900 text-sm">
+                      {review.employee_name}
+                    </h4>
                   </div>
-                  <p className="text-sm text-info-300 opacity-80 leading-relaxed mb-6 grow">
-                    "{testimoni.quote}"
-                  </p>
-                  <h4 className="font-bold text-gray-900 text-sm">{testimoni.name}</h4>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <EmptySection
+                icon={FaStar}
+                title="Belum ada ulasan dari karyawan"
+                className="py-8"
+              />
+            )}
           </Card>
         </div>
       </div>
 
       <ProfileUmkmModals />
+      {deleteId && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-[90%] max-w-md">
+            <h3 className="text-lg font-semibold mb-2">Hapus Fasilitas</h3>
+
+            <p className="text-sm text-gray-600 mb-6">
+              Apakah Anda yakin ingin menghapus fasilitas ini?
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setDeleteId(null)}>
+                Batal
+              </Button>
+
+              <Button
+                className="bg-red-500 hover:bg-red-600 text-white"
+                onClick={async () => {
+                  await handleHapusFasilitas(deleteId);
+                  setDeleteId(null);
+                }}
+              >
+                Hapus
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardUmkmLayout>
   );
 }

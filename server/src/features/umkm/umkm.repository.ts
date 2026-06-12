@@ -71,7 +71,7 @@ const UmkmRepository = {
   findAllUmkm: async () => {
     const query = `
       SELECT p.id_umkm, p.user_id, p.owner_name, p.nib, p.business_name, p.business_category, p.employee_count, p.established_at, p.province, p.regency, p.district, p.subdistrict, p.website_sosmed, p.business_email, p.business_phone, p.status, p.created_at,
-             d.logo_url, d.ktp_url, d.nib_file_url
+      d.logo_url, d.ktp_url, d.nib_file_url
       FROM umkm_profiles p
       LEFT JOIN umkm_documents d ON p.id_umkm = d.umkm_id
       ORDER BY p.created_at DESC
@@ -111,6 +111,37 @@ const UmkmRepository = {
     const query = "SELECT * FROM umkm_reviews WHERE umkm_id = ? ORDER BY created_at DESC";
     const [rows] = await pool.execute(query, [umkmId]);
     return rows;
+  },
+
+  getBenefitsByUmkmId: async (umkmId: number) => {
+  const [rows] = await pool.execute(
+    "SELECT * FROM umkm_benefits WHERE id_umkm = ? ORDER BY created_at ASC",
+    [umkmId],
+  );
+  return rows;
+},
+
+  createBenefit: async (umkmId: number, title: string, description: string) => {
+    const [result]: any = await pool.execute(
+      "INSERT INTO umkm_benefits (id_umkm, title, description, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())",
+      [umkmId, title, description],
+    );
+    return result.insertId;
+  },
+
+  deleteBenefit: async (benefitId: number, umkmId: number) => {
+    const [result]: any = await pool.execute(
+      "DELETE FROM umkm_benefits WHERE id_benefit = ? AND id_umkm = ?",
+      [benefitId, umkmId],
+    );
+    return result.affectedRows > 0;
+  },
+
+  updateDescription: async (umkmId: number, description: string) => {
+    await pool.execute(
+      "UPDATE umkm_profiles SET description = ? WHERE id_umkm = ?",
+      [description, umkmId],
+    );
   },
 };
 

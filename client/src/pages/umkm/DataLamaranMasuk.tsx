@@ -166,7 +166,7 @@ export default function DataLamaranMasuk() {
           startTime: waktuMulaiWawancara,
           endTime: waktuSelesaiWawancara,
           type:
-            metodeWawancara === "Google Meet" ? "Google Meet" : "Tatap Muka",
+            metodeWawancara === "Google Meet" ? "google_meet" : "tatap_muka",
           link: lokasiWawancara,
           notes: catatanWawancara,
         }),
@@ -605,12 +605,12 @@ export default function DataLamaranMasuk() {
                     ? "Memproses..."
                     : "Konfirmasi & Kirim Undangan"}
                 </button>
-                <button
-                  onClick={() => navigate("/chat")}
+                {/* <button
+                  onClick={() => navigate("/umkm/dashboard/lamaran-masuk")}
                   className="w-full py-3 rounded-xl border border-teal-600 text-teal-600 font-semibold text-sm hover:bg-teal-50 transition"
                 >
-                  Hubungi Pelamar
-                </button>
+                  Lihat Lamaran Lainnya
+                </button> */}
               </div>
             </div>
           )}

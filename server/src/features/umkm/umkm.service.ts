@@ -92,7 +92,6 @@ const UmkmService = {
 
     await UmkmRepository.updateStatus(umkmId, status);
     
-    // Auto-update user's role on database
     if (status === "APPROVED") {
       await UmkmRepository.updateUserRole(umkm.user_id, "UMKM");
     } else if (status === "REJECTED" || status === "PENDING") {
@@ -100,6 +99,67 @@ const UmkmService = {
     }
 
     return { umkm_id: umkmId, status };
+  },
+
+  getBenefits: async (umkmId: number) => {
+    return UmkmRepository.getBenefitsByUmkmId(umkmId);
+  },
+ 
+  addBenefit: async (umkmId: number, title: string, description: string) => {
+    if (!title || title.trim().length === 0) {
+      throw new BadRequestError("Judul fasilitas wajib diisi");
+    }
+    if (title.trim().length < 3) {
+      throw new BadRequestError("Judul fasilitas minimal 3 karakter");
+    }
+    if (title.trim().length > 100) {
+      throw new BadRequestError("Judul fasilitas maksimal 100 karakter");
+    }
+    if (description && description.trim().length > 500) {
+      throw new BadRequestError("Deskripsi fasilitas maksimal 500 karakter");
+    }
+  
+    const insertId = await UmkmRepository.createBenefit(
+      umkmId,
+      title.trim(),
+      description?.trim() || "",
+    );
+  
+    return {
+      id_benefit: insertId,
+      id_umkm: umkmId,
+      title: title.trim(),
+      description: description?.trim() || "",
+    };
+  },
+  
+  deleteBenefit: async (benefitId: number, umkmId: number) => {
+    if (!benefitId || isNaN(benefitId)) {
+      throw new BadRequestError("ID fasilitas tidak valid");
+    }
+    const deleted = await UmkmRepository.deleteBenefit(benefitId, umkmId);
+    if (!deleted) {
+      throw new BadRequestError("Fasilitas tidak ditemukan atau bukan milik Anda");
+    }
+    return true;
+  },
+  
+  
+  updateDescription: async (umkmId: number, description: string) => {
+    if (!description || description.trim().length === 0) {
+      throw new BadRequestError("Deskripsi usaha wajib diisi");
+    }
+    if (description.trim().length < 20) {
+      throw new BadRequestError("Deskripsi usaha minimal 20 karakter");
+    }
+    if (description.trim().length > 2000) {
+      throw new BadRequestError("Deskripsi usaha maksimal 2000 karakter");
+    }
+    await UmkmRepository.updateDescription(umkmId, description.trim());
+    return true;
+  },
+  getReviewsByUmkmId: async (umkmId: number) => {
+    return UmkmRepository.getReviewsByUmkmId(umkmId);
   },
 };
 

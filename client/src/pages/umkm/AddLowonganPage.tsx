@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createJobSchema,
   type CreateJobInput,
-} from "../../../../server/src/features/jobs/job.schema";
+} from "@/shared/schemas/job.schema";
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/shared/lib/api";
 

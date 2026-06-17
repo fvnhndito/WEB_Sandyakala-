@@ -252,7 +252,7 @@ function ProfileMenu() {
     localStorage.removeItem("user");
     localStorage.removeItem("accessToken");
     dispatch(authLogout());
-    navigate("/login");
+    navigate("/auth/login");
   };
 
   return (

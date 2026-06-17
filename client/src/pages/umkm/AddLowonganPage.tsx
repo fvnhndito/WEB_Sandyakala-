@@ -68,6 +68,7 @@ export default function AddLowonganPage() {
     mode: "onChange",
     defaultValues: {
       type: "PROJECT",
+      skills: [],
       project_tasks: [
         { task_name: "", task_order: 1, project_start: "", project_end: "" },
       ],
@@ -153,6 +154,8 @@ export default function AddLowonganPage() {
       "job_category",
       "description",
       "type",
+      "salary_min",
+      "salary_max",
       "worker_needed",
       "deadline",
     ];
@@ -431,7 +434,11 @@ export default function AddLowonganPage() {
                 shouldValidate: true,
               });
             }}
-            error={errors.salary_min?.message}
+            error={
+              errors.salary_min?.type === "invalid_type"
+                ? "Gaji minimal wajib diisi"
+                : errors.salary_min?.message
+            }
           />
           <InputField
             type="text"
@@ -445,7 +452,11 @@ export default function AddLowonganPage() {
                 shouldValidate: true,
               });
             }}
-            error={errors.salary_max?.message}
+            error={
+              errors.salary_max?.type === "invalid_type"
+                ? "Gaji maksimal wajib diisi"
+                : errors.salary_max?.message
+            }
           />
         </div>
       </Card>
@@ -462,13 +473,14 @@ export default function AddLowonganPage() {
             </label>
             <input
               {...register("worker_needed", { valueAsNumber: true })}
-              type="number"
               placeholder="Jumlah pekerja yang dibutuhkan"
               className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] placeholder:text-gray-400"
             />
             {errors.worker_needed && (
               <span className="text-red-500 text-sm mt-1">
-                {errors.worker_needed.message}
+                {errors.worker_needed.type === "invalid_type"
+                  ? "Jumlah pekerja wajib diisi"
+                  : errors.worker_needed.message}
               </span>
             )}
           </div>
@@ -483,7 +495,9 @@ export default function AddLowonganPage() {
             />
             {errors.deadline && (
               <span className="text-red-500 text-xs">
-                {errors.deadline.message}
+                {errors.deadline.type === "invalid_type"
+                  ? "Batas waktu melamar wajib diisi"
+                  : errors.deadline.message}
               </span>
             )}
           </div>
@@ -502,7 +516,7 @@ export default function AddLowonganPage() {
     </div>
   );
 
-  //  STEP 2 
+  //  STEP 2
   const renderStep2 = () => (
     <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-8 duration-500">
       <Card className="rounded-[16px] shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 p-6 md:p-8">
@@ -681,7 +695,7 @@ export default function AddLowonganPage() {
     </div>
   );
 
-  //  STEP 3 
+  //  STEP 3
   const renderStep3 = () => (
     <div className="flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-500">
       <Card className="rounded-[16px] shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 p-12 text-center min-h-[350px] flex flex-col items-center justify-center">

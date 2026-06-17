@@ -14,23 +14,22 @@ export const createJobSchema = z
     job_category: z.string().min(1, "Bidang pekerjaan wajib diisi"),
     description: z.string().min(10, "Deskripsi minimal 10 karakter"),
     type: z.enum(["SHIFT", "PROJECT"]),
-    salary_min: z.coerce.number().min(1, "Gaji minimal wajib diisi").optional(),
+    salary_min: z.coerce.number().min(1, "Gaji minimal wajib diisi"),
     salary_max: z.coerce
       .number()
-      .min(1, "Gaji maksimal wajib diisi")
-      .optional(),
+      .min(1, "Gaji maksimal wajib diisi"),
     worker_needed: z.coerce.number().int().min(1, "Minimal butuh 1 pekerja"),
     deadline: z.coerce
       .date()
       .refine(
-        (date) => date > new Date(),
-        "Deadline harus lebih maju dari hari ini",
-      ),
+    (date) => date > new Date(),
+      "Deadline harus lebih maju dari hari ini",
+    ),
     minimum_education: z.string().min(1, "Pendidikan minimum wajib diisi"),
     qualification_description: z.string().min(1, "Kualifikasi wajib diisi"),
     portfolio_requirement: z.enum(["REQUIRED", "OPTIONAL"]),
 
-    skills: z.array(z.string()).min(1, "Pilih minimal 1 keahlian"),
+    skills: z.array(z.string()).min(1, "Isi minimal 1 keahlian"),
 
     shifts: z.array(z.enum(["PAGI", "SIANG", "MALAM"])).optional(),
     project_tasks: z
@@ -41,12 +40,14 @@ export const createJobSchema = z
             task_order: z.number().int(),
             project_start: z
               .string()
+              .min(1, "Tanggal mulai wajib diisi")
               .regex(
                 /^\d{4}-\d{2}-\d{2}$/,
                 "Format tanggal mulai harus YYYY-MM-DD",
               ),
             project_end: z
               .string()
+              .min(1, "Tanggal berakhir wajib diisi")
               .regex(
                 /^\d{4}-\d{2}-\d{2}$/,
                 "Format tanggal selesai harus YYYY-MM-DD",

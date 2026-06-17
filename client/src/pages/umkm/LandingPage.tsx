@@ -7,6 +7,8 @@ import { FiUserPlus } from "react-icons/fi";
 import logo from "@/assets/images/logo.png";
 import { useAppSelector } from "@/shared/stores/hook";
 import AppFs from "@/assets/images/app-fs.png";
+import heroLanding from "@/assets/images/hero-landing.png";
+import kolaborasi from "@/assets/images/kolaborasi.png";
 
 const navigateToDashboard = (role: string) => {
   if (role === "UMKM") {
@@ -174,7 +176,7 @@ function HeroSection() {
     <section
       id="beranda"
       className="relative min-h-screen bg-cover bg-center flex items-center pt-20"
-      style={{ backgroundImage: "url('/src/assets/images/hero-landing.png')" }}
+      style={{ backgroundImage: `url(${heroLanding})` }}
     >
       <div className="absolute inset-0 bg-blue-900/60" />
       <div className="relative z-10 max-w-6xl mx-auto px-28 w-full">
@@ -458,7 +460,7 @@ function CTASection() {
             </button>
           </div>
           <img
-            src="/src/assets/images/kolaborasi.png"
+            src={kolaborasi}
             alt="Kolaborasi"
             className="w-52 md:w-64 object-contain shrink-0 hidden md:block"
           />

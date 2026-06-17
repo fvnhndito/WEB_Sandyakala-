@@ -161,7 +161,7 @@ export default function DetailReportAdmin() {
 
 // Helper badge component mapping if Badge is not defined locally
 import { cn } from "@/shared/lib/utils";
-function Badge({ children, variant, size, className }: any) {
+function Badge({ children, variant, className }: any) {
   const variants: any = {
     warning: "bg-yellow-100 text-yellow-800",
     success2: "bg-green-100 text-green-800",

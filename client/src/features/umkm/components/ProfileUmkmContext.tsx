@@ -35,7 +35,8 @@ type ProfileUmkmContextType = {
 
 const ProfileUmkmContext = createContext<ProfileUmkmContextType | null>(null);
 
-const API_BASE = "/api/umkm";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_BASE = `${BASE_URL}/umkm`;
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("accessToken");
